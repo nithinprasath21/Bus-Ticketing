@@ -109,59 +109,6 @@ The backend is built using **Node.js and Express.js** and consists of:
 
 ---
 
-## Database Tables (MongoDB Collections)
-### **User Collection (`users`)**
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "phone": "1234567890",
-  "password": "hashed_password",
-  "role": "passenger",
-  "is_blocked": false,
-  "created_at": "2024-03-17T00:00:00Z"
-}
-```
-
-### **Bus Collection (`buses`)**
-```json
-{
-  "operator_id": "ObjectId(abc123)",
-  "bus_name": "Volvo AC Sleeper",
-  "bus_type": "AC Sleeper",
-  "total_seats": 40,
-  "amenities": ["WiFi", "Charging Port"],
-  "created_at": "2024-03-17T00:00:00Z"
-}
-```
-
-### **Trip Collection (`trips`)**
-```json
-{
-  "bus_id": "ObjectId(bus123)",
-  "source": "New York",
-  "destination": "Los Angeles",
-  "departure_time": "2024-04-01T08:00:00Z",
-  "arrival_time": "2024-04-01T20:00:00Z",
-  "price": 50,
-  "available_seats": ["A1", "A2", "A3"],
-  "created_at": "2024-03-17T00:00:00Z"
-}
-```
-
-### **Booking Collection (`bookings`)**
-```json
-{
-  "user_id": "ObjectId(user123)",
-  "trip_id": "ObjectId(trip123)",
-  "selected_seats": ["A1", "A2"],
-  "total_price": 100,
-  "status": "confirmed",
-  "created_at": "2024-03-17T00:00:00Z"
-}
-```
-
----
 
 ## File Structure
 ```
@@ -177,23 +124,6 @@ Project/
 │   ├── paymentSchema.js
 │   ├── tripSchema.js
 │   ├── userSchema.js
-│── routes/
-│   ├── authRoutes.js
-│   ├── busRoutes.js
-│   ├── tripRoutes.js
-│   ├── bookingRoutes.js
-│   ├── adminRoutes.js
-│── controllers/
-│   ├── authController.js
-│   ├── busController.js
-│   ├── tripController.js
-│   ├── bookingController.js
-│   ├── adminController.js
-│── middleware/
-│   ├── authMiddleware.js
-│── config/
-│   ├── dbConfig.js
-│── package.json
 │── .env
 ```
 
@@ -213,6 +143,3 @@ Project/
 - **Node.js** (Runtime Environment)
 - **JWT** (Authentication)
 - **Stripe/Razorpay** (Payments)
-
-💡 *For any issues or contributions, feel free to raise a PR!*
-
