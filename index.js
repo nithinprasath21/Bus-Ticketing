@@ -11,11 +11,15 @@ const Cancellation = require("./models/cancellationSchema");
 const Feedback = require("./models/feedbackSchema");
 const Operator = require("./models/operatorSchema");
 
+const authRoutes = require("./routes/authRoutes");
+
 const app = express();
 app.use(express.json());
 
 // Connect to MongoDB
 connectDB();
+
+app.use("/api/auth", authRoutes);
 
 // Sample Route
 app.get("/", (req, res) => {
