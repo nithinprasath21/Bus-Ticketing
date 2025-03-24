@@ -1,6 +1,6 @@
 const express = require("express");
-const connectDB = require("./db");
-
+const connectDB = require("./config/db");
+require("dotenv").config();
 // Import Models
 const User = require("./models/userSchema");
 const Bus = require("./models/busSchema");

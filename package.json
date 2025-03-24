@@ -1,0 +1,32 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "The **Bus Ticketing System** is a web application built using the **MERN stack** (MongoDB, Express.js, React.js, and Node.js). This platform allows users to search, book, and manage bus tickets, while enabling bus operators to manage their trips. Admins oversee the entire system to ensure smooth operation.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testTimeout": 10000,
+    "testEnvironment": "node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nithinprasath21/Bus-Ticketing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nithinprasath21/Bus-Ticketing/issues"
+  },
+  "homepage": "https://github.com/nithinprasath21/Bus-Ticketing#readme",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "winston": "^3.17.0"
+  }
+}

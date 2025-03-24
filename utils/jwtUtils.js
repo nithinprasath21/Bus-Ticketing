@@ -1,14 +1,15 @@
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = process.env.JWT_SECRET;
 
 class JwtUtils {
-  generateToken(user) {
-    return jwt.sign({ id: user._id, role: user.role }, SECRET_KEY, { expiresIn: "1d" });
+  static generateToken(user) {
+    if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY is missing in .env");
+    return jwt.sign({ id: user._id, role: user.role }, process.env.SECRET_KEY, { expiresIn: process.env.JWT_EXPIRY || "1d" });
   }
 
-  verifyToken(token) {
-    return jwt.verify(token, SECRET_KEY);
+  static verifyToken(token) {
+    if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY is missing in .env");
+    return jwt.verify(token, process.env.SECRET_KEY);
   }
 }
 
-module.exports = new JwtUtils();
+module.exports = JwtUtils;
