@@ -1,17 +1,11 @@
 const express = require("express");
 const connectDB = require("./config/db");
 require("dotenv").config();
-// Import Models
-const User = require("./models/userSchema");
-const Bus = require("./models/busSchema");
-const Trip = require("./models/tripSchema");
-const Booking = require("./models/bookingSchema");
-const Payment = require("./models/paymentSchema");
-const Cancellation = require("./models/cancellationSchema");
-const Feedback = require("./models/feedbackSchema");
-const Operator = require("./models/operatorSchema");
 
+// Import Routes
 const authRoutes = require("./routes/authRoutes");
+const busRoutes = require("./routes/busRoutes");
+const operatorRoutes = require("./routes/operatorRoutes");
 
 const app = express();
 app.use(express.json());
@@ -19,7 +13,10 @@ app.use(express.json());
 // Connect to MongoDB
 connectDB();
 
+// Register Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/buses", busRoutes);
+app.use("/api/operators", operatorRoutes);
 
 // Sample Route
 app.get("/", (req, res) => {
