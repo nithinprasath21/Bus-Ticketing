@@ -1,11 +1,12 @@
 const express = require("express");
-const connectDB = require("./config/db");
+const connectDB = require("./db");
 require("dotenv").config();
 
 // Import Routes
 const authRoutes = require("./routes/authRoutes");
 const busRoutes = require("./routes/busRoutes");
 const operatorRoutes = require("./routes/operatorRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 app.use(express.json());
@@ -17,6 +18,7 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/buses", busRoutes);
 app.use("/api/operators", operatorRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Sample Route
 app.get("/", (req, res) => {
