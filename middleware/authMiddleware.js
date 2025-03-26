@@ -19,4 +19,18 @@ const authorizeRole = (roles) => (req, res, next) => {
   next();
 };
 
-module.exports = { verifyToken, authorizeRole };
+const verifyAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ message: "Access denied: Admins only" });
+  }
+  next();
+};
+
+const isOperator = (req, res, next) => {
+  if (!req.user || req.user.role !== "operator") {
+    return res.status(403).json({ message: "Access denied: Operators only" });
+  }
+  next();
+};
+
+module.exports = { verifyToken, authorizeRole, verifyAdmin, isOperator };
