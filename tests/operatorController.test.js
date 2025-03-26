@@ -4,28 +4,24 @@ const OperatorService = require("../services/operatorService");
 
 jest.mock("../services/operatorService");
 
-describe("Operator Controller Tests", () => {
+describe("Operator Controller", () => {
   it("should register an operator", async () => {
-    OperatorService.registerOperator.mockResolvedValue({ name: "Operator", email: "op@test.com" });
+    const mockOperator = { name: "Operator", email: "op@test.com" };
+    OperatorService.registerOperator.mockResolvedValue(mockOperator);
 
-    const response = await request(app).post("/api/operators/register").send({
-      name: "Operator",
-      email: "op@test.com",
-    });
+    const res = await request(app).post("/api/operators/register").send(mockOperator);
 
-    expect(response.status).toBe(201);
-    expect(response.body.success).toBe(true);
+    expect(res.status).toBe(201);
+    expect(res.body).toEqual(expect.objectContaining(mockOperator));
   });
 
   it("should create a trip", async () => {
-    OperatorService.createTrip.mockResolvedValue({ from: "CityA", to: "CityB" });
+    const mockTrip = { from: "CityA", to: "CityB" };
+    OperatorService.createTrip.mockResolvedValue(mockTrip);
 
-    const response = await request(app).post("/api/trips").send({
-      from: "CityA",
-      to: "CityB",
-    });
+    const res = await request(app).post("/api/trips").send(mockTrip);
 
-    expect(response.status).toBe(201);
-    expect(response.body.success).toBe(true);
+    expect(res.status).toBe(201);
+    expect(res.body).toEqual(expect.objectContaining(mockTrip));
   });
 });

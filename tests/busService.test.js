@@ -3,20 +3,21 @@ const BusRepository = require("../repositories/busRepository");
 
 jest.mock("../repositories/busRepository");
 
-describe("BusService", () => {
-  it("should create a bus", async () => {
+describe("Bus Service", () => {
+  test("creates a bus", async () => {
     const busData = { name: "Express", seats: 50 };
     BusRepository.createBus.mockResolvedValue(busData);
 
     const result = await BusService.createBus(busData);
+
     expect(result).toEqual(busData);
   });
 
-  it("should fetch all buses", async () => {
-    const mockBuses = [{ name: "Bus1" }, { name: "Bus2" }];
-    BusRepository.getAllBuses.mockResolvedValue(mockBuses);
+  test("fetches all buses", async () => {
+    BusRepository.getAllBuses.mockResolvedValue([{ name: "Bus1" }, { name: "Bus2" }]);
 
     const result = await BusService.getAllBuses();
-    expect(result).toEqual(mockBuses);
+
+    expect(result).toEqual([{ name: "Bus1" }, { name: "Bus2" }]);
   });
 });

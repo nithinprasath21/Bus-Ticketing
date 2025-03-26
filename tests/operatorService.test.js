@@ -3,12 +3,13 @@ const OperatorRepository = require("../repositories/operatorRepository");
 
 jest.mock("../repositories/operatorRepository");
 
-describe("Operator Service Tests", () => {
+describe("Operator Service", () => {
   it("should register an operator", async () => {
     const mockOperator = { name: "Test Operator", email: "test@test.com" };
     OperatorRepository.createOperator.mockResolvedValue(mockOperator);
 
     const result = await OperatorService.registerOperator(mockOperator);
+
     expect(result).toEqual(mockOperator);
   });
 
@@ -17,6 +18,7 @@ describe("Operator Service Tests", () => {
     OperatorRepository.createTrip.mockResolvedValue(mockTrip);
 
     const result = await OperatorService.createTrip(mockTrip);
+
     expect(result).toEqual(mockTrip);
   });
 });

@@ -10,9 +10,11 @@ app.use(express.json());
 app.use("/api/admin", adminRoutes);
 
 describe("Admin Controller", () => {
-  test("GET /api/admin/users should return all users", async () => {
+  test("GET /api/admin/users returns all users", async () => {
     AdminService.getAllUsers.mockResolvedValue([{ id: "1", name: "John Doe" }]);
+
     const response = await request(app).get("/api/admin/users");
+
     expect(response.status).toBe(200);
     expect(response.body).toEqual([{ id: "1", name: "John Doe" }]);
   });
