@@ -4,10 +4,8 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-// Only Admins should access these routes
 router.use(authMiddleware.verifyAdmin);
 
-// User & Operator Management
 router.get("/users", AdminController.getAllUsers);
 router.put("/users/:id/block", AdminController.blockUser);
 router.put("/users/:id/unblock", AdminController.unblockUser);

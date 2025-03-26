@@ -1,25 +1,45 @@
-const User = require("../models/userSchema");
-const Operator = require("../models/operatorSchema");
+const User = require("../models/userModel");
+const Operator = require("../models/operatorModel");
 
 class AdminRepository {
   static async getAllUsers() {
-    return await User.find();
+    try {
+      return await User.find();
+    } catch (error) {
+      throw new Error(`Error fetching users: ${error.message}`);
+    }
   }
 
-  static async updateUserStatus(userId, status) {
-    return await User.findByIdAndUpdate(userId, { isActive: status });
+  static async updateUserStatus(userId, isBlocked) {
+    try {
+      return await User.findByIdAndUpdate(userId, { isBlocked }, { new: true });
+    } catch (error) {
+      throw new Error(`Error updating user status: ${error.message}`);
+    }
   }
 
   static async getAllOperators() {
-    return await Operator.find();
+    try {
+      return await Operator.find();
+    } catch (error) {
+      throw new Error(`Error fetching operators: ${error.message}`);
+    }
   }
 
   static async verifyOperator(operatorId) {
-    return await Operator.findByIdAndUpdate(operatorId, { isVerified: true });
+    try {
+      return await Operator.findByIdAndUpdate(operatorId, { isVerified: true }, { new: true });
+    } catch (error) {
+      throw new Error(`Error verifying operator: ${error.message}`);
+    }
   }
 
-  static async updateOperatorStatus(operatorId, status) {
-    return await Operator.findByIdAndUpdate(operatorId, { isActive: status });
+  static async updateOperatorStatus(operatorId, isBlocked) {
+    try {
+      return await Operator.findByIdAndUpdate(operatorId, { isBlocked }, { new: true });
+    } catch (error) {
+      throw new Error(`Error updating operator status: ${error.message}`);
+    }
   }
 }
 

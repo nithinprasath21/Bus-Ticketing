@@ -1,19 +1,21 @@
-const jwtUtils = require("../utils/jwtUtils");
+const JwtUtils = require("../utils/jwtUtils");
 
 const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(403).json({ message: "Unauthorized" });
-
   try {
-    req.user = jwtUtils.verifyToken(token);
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "Unauthorized: No token provided" });
+
+    req.user = JwtUtils.verifyToken(token);
     next();
   } catch {
-    res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
 const authorizeRole = (roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) return res.status(403).json({ message: "Forbidden" });
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({ message: "Forbidden: You do not have access" });
+  }
   next();
 };
 

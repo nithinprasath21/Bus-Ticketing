@@ -1,26 +1,46 @@
-const Operator = require("../models/operatorSchema");
-const Trip = require("../models/tripSchema");
-const Booking = require("../models/bookingSchema");
+const Operator = require("../models/operatorModel");
+const Trip = require("../models/tripModel");
+const Booking = require("../models/bookingModel");
 
 class OperatorRepository {
   static async createOperator(operatorData) {
-    return await Operator.create(operatorData);
+    try {
+      return await Operator.create(operatorData);
+    } catch (error) {
+      throw new Error(`Error creating operator: ${error.message}`);
+    }
   }
 
   static async createTrip(tripData) {
-    return await Trip.create(tripData);
+    try {
+      return await Trip.create(tripData);
+    } catch (error) {
+      throw new Error(`Error creating trip: ${error.message}`);
+    }
   }
 
   static async updateTrip(tripId, updateData) {
-    return await Trip.findByIdAndUpdate(tripId, updateData, { new: true });
+    try {
+      return await Trip.findByIdAndUpdate(tripId, updateData, { new: true });
+    } catch (error) {
+      throw new Error(`Error updating trip: ${error.message}`);
+    }
   }
 
   static async deleteTrip(tripId) {
-    return await Trip.findByIdAndDelete(tripId);
+    try {
+      return await Trip.findByIdAndDelete(tripId);
+    } catch (error) {
+      throw new Error(`Error deleting trip: ${error.message}`);
+    }
   }
 
   static async getTripBookings(tripId) {
-    return await Booking.find({ tripId }).populate("userId", "name email");
+    try {
+      return await Booking.find({ tripId }).populate("userId", "name email");
+    } catch (error) {
+      throw new Error(`Error fetching trip bookings: ${error.message}`);
+    }
   }
 }
 

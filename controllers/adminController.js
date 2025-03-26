@@ -1,66 +1,66 @@
 const AdminService = require("../services/adminService");
 
 class AdminController {
-  static async getAllUsers(req, res) {
+  static async getAllUsers(req, res, next) {
     try {
       const users = await AdminService.getAllUsers();
-      res.status(200).json(users);
+      res.status(200).json({ success: true, data: users });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      next(error);
     }
   }
 
-  static async blockUser(req, res) {
+  static async blockUser(req, res, next) {
     try {
       await AdminService.blockUser(req.params.id);
-      res.status(200).json({ message: "User blocked successfully" });
+      res.status(200).json({ success: true, message: "User blocked successfully" });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      next(error);
     }
   }
 
-  static async unblockUser(req, res) {
+  static async unblockUser(req, res, next) {
     try {
       await AdminService.unblockUser(req.params.id);
-      res.status(200).json({ message: "User unblocked successfully" });
+      res.status(200).json({ success: true, message: "User unblocked successfully" });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      next(error);
     }
   }
 
-  static async getAllOperators(req, res) {
+  static async getAllOperators(req, res, next) {
     try {
       const operators = await AdminService.getAllOperators();
-      res.status(200).json(operators);
+      res.status(200).json({ success: true, data: operators });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      next(error);
     }
   }
 
-  static async verifyOperator(req, res) {
+  static async verifyOperator(req, res, next) {
     try {
       await AdminService.verifyOperator(req.params.id);
-      res.status(200).json({ message: "Operator verified successfully" });
+      res.status(200).json({ success: true, message: "Operator verified successfully" });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      next(error);
     }
   }
 
-  static async blockOperator(req, res) {
+  static async blockOperator(req, res, next) {
     try {
       await AdminService.blockOperator(req.params.id);
-      res.status(200).json({ message: "Operator blocked successfully" });
+      res.status(200).json({ success: true, message: "Operator blocked successfully" });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      next(error);
     }
   }
 
-  static async unblockOperator(req, res) {
+  static async unblockOperator(req, res, next) {
     try {
       await AdminService.unblockOperator(req.params.id);
-      res.status(200).json({ message: "Operator unblocked successfully" });
+      res.status(200).json({ success: true, message: "Operator unblocked successfully" });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      next(error);
     }
   }
 }

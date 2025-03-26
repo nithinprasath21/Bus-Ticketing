@@ -1,14 +1,16 @@
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
 
 class JwtUtils {
   static generateToken(user) {
-    if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY is missing in .env");
-    return jwt.sign({ id: user._id, role: user.role }, process.env.SECRET_KEY, { expiresIn: process.env.JWT_EXPIRY || "1d" });
+    return jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
   }
 
   static verifyToken(token) {
-    if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY is missing in .env");
-    return jwt.verify(token, process.env.SECRET_KEY);
+    return jwt.verify(token, JWT_SECRET);
   }
 }
 

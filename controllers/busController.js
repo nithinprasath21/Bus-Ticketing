@@ -1,49 +1,49 @@
 const BusService = require("../services/busService");
 
 class BusController {
-  async createBus(req, res) {
+  async createBus(req, res, next) {
     try {
       const bus = await BusService.createBus(req.body);
-      res.status(201).json(bus);
+      res.status(201).json({ success: true, data: bus });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
-  async getAllBuses(req, res) {
+  async getAllBuses(req, res, next) {
     try {
       const buses = await BusService.getAllBuses();
-      res.status(200).json(buses);
+      res.status(200).json({ success: true, data: buses });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
-  async getBusById(req, res) {
+  async getBusById(req, res, next) {
     try {
       const bus = await BusService.getBusById(req.params.id);
-      if (!bus) return res.status(404).json({ message: "Bus not found" });
-      res.status(200).json(bus);
+      if (!bus) return res.status(404).json({ success: false, message: "Bus not found" });
+      res.status(200).json({ success: true, data: bus });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
-  async updateBus(req, res) {
+  async updateBus(req, res, next) {
     try {
       const bus = await BusService.updateBus(req.params.id, req.body);
-      res.status(200).json(bus);
+      res.status(200).json({ success: true, data: bus });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 
-  async deleteBus(req, res) {
+  async deleteBus(req, res, next) {
     try {
       await BusService.deleteBus(req.params.id);
-      res.status(200).json({ message: "Bus deleted successfully" });
+      res.status(200).json({ success: true, message: "Bus deleted successfully" });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     }
   }
 }
