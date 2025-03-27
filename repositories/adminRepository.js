@@ -41,6 +41,22 @@ class AdminRepository {
       throw new Error(`Error updating operator status: ${error.message}`);
     }
   }
+
+  static async getTripDetails(tripId) {
+    try {
+      return await Trip.findById(tripId).populate("busId operatorId");
+    } catch (error) {
+      throw new Error(`Error fetching trip details: ${error.message}`);
+    }
+  }
+
+  static async cancelTrip(tripId) {
+    try {
+      return await Trip.findByIdAndUpdate(tripId, { status: "canceled" }, { new: true });
+    } catch (error) {
+      throw new Error(`Error canceling trip: ${error.message}`);
+    }
+  }
 }
 
 module.exports = AdminRepository;

@@ -63,6 +63,24 @@ class AdminController {
       next(error);
     }
   }
+
+  static async getTripDetails(req, res, next) {
+    try {
+      const trip = await AdminService.getTripDetails(req.params.id);
+      res.status(200).json({ success: true, data: trip });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async cancelTrip(req, res, next) {
+    try {
+      await AdminService.cancelTrip(req.params.id);
+      res.status(200).json({ success: true, message: "Trip canceled successfully" });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = AdminController;

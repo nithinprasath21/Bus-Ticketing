@@ -10,6 +10,7 @@ const tripSchema = new mongoose.Schema(
     arrivalTime: { type: Date, required: true },
     price: { type: Number, required: true },
     availableSeats: { type: [String], required: true },
+    status: { type: String, enum: ["active", "canceled"], default: "active" },
   },
   { timestamps: true }
 );

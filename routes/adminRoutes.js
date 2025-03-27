@@ -13,5 +13,7 @@ router.get("/operators", AdminController.getAllOperators);
 router.put("/operators/:id/verify", AdminController.verifyOperator);
 router.put("/operators/:id/block", AdminController.blockOperator);
 router.put("/operators/:id/unblock", AdminController.unblockOperator);
+router.get("/trips/:id", AdminController.getTripDetails);
+router.delete("/trips/:id", AdminController.cancelTrip);
 
 module.exports = router;

@@ -56,6 +56,22 @@ class AdminService {
       throw new Error(`Error unblocking operator: ${error.message}`);
     }
   }
+
+  static async getTripDetails(tripId) {
+    try {
+      return await AdminRepository.getTripDetails(tripId);
+    } catch (error) {
+      throw new Error(`Error fetching trip details: ${error.message}`);
+    }
+  }
+
+  static async cancelTrip(tripId) {
+    try {
+      return await AdminRepository.cancelTrip(tripId);
+    } catch (error) {
+      throw new Error(`Error canceling trip: ${error.message}`);
+    }
+  }
 }
 
 module.exports = AdminService;
