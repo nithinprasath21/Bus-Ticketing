@@ -11,7 +11,6 @@ router.get("/buses/:id/seats", PassengerController.checkSeatAvailability);
 router.post("/bookings", PassengerController.bookTicket);
 router.get("/bookings", PassengerController.viewBookingHistory);
 router.delete("/bookings/:id", PassengerController.cancelBooking);
-
 router.put("/profile", PassengerController.updateProfile);
 
 module.exports = router;
