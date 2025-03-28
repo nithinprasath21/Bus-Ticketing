@@ -27,6 +27,8 @@
   "homepage": "https://github.com/nithinprasath21/Bus-Ticketing#readme",
   "dependencies": {
     "dotenv": "^16.4.7",
+    "jest": "^29.7.0",
     "winston": "^3.17.0"
-  }
+  },
+  "devDependencies": {}
 }
