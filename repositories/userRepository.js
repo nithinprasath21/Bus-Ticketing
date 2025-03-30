@@ -1,21 +1,13 @@
 const User = require("../models/userModel");
 
 class UserRepository {
-  async findByEmail(email) {
-    try {
-      return await User.findOne({ email });
-    } catch (error) {
-      throw new Error(`Error finding user by email: ${error.message}`);
-    }
+  static async findByEmail(email) {
+    return await User.findOne({ email });
   }
 
-  async createUser(userData) {
-    try {
-      return await User.create(userData);
-    } catch (error) {
-      throw new Error(`Error creating user: ${error.message}`);
-    }
+  static async createUser(userData) {
+    return await User.create(userData);
   }
 }
 
-module.exports = new UserRepository();
+module.exports = UserRepository;

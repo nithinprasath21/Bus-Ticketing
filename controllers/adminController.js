@@ -28,42 +28,6 @@ class AdminController {
     }
   }
 
-  static async getAllOperators(req, res, next) {
-    try {
-      const operators = await AdminService.getAllOperators();
-      res.status(200).json({ success: true, data: operators });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async verifyOperator(req, res, next) {
-    try {
-      await AdminService.verifyOperator(req.params.id);
-      res.status(200).json({ success: true, message: "Operator verified successfully" });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async blockOperator(req, res, next) {
-    try {
-      await AdminService.blockOperator(req.params.id);
-      res.status(200).json({ success: true, message: "Operator blocked successfully" });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async unblockOperator(req, res, next) {
-    try {
-      await AdminService.unblockOperator(req.params.id);
-      res.status(200).json({ success: true, message: "Operator unblocked successfully" });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   static async getTripDetails(req, res, next) {
     try {
       const trip = await AdminService.getTripDetails(req.params.id);
@@ -77,6 +41,24 @@ class AdminController {
     try {
       await AdminService.cancelTrip(req.params.id);
       res.status(200).json({ success: true, message: "Trip canceled successfully" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getPassengerBookings(req, res, next) {
+    try {
+      const bookings = await AdminService.getPassengerBookings(req.params.id);
+      res.status(200).json({ success: true, data: bookings });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deletePassengerBooking(req, res, next) {
+    try {
+      await AdminService.deletePassengerBooking(req.params.id, req.params.bookingId);
+      res.status(200).json({ success: true, message: "Passenger booking deleted successfully" });
     } catch (error) {
       next(error);
     }

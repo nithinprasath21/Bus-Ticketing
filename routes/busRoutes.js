@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const busController = require("../controllers/busController");
+const BusController = require("../controllers/busController");
 
-router.post("/buses", busController.createBus);
-router.get("/buses", busController.getAllBuses);
-router.get("/buses/:id", busController.getBusById);
-router.put("/buses/:id", busController.updateBus);
-router.delete("/buses/:id", busController.deleteBus);
+router.post("/buses", BusController.createBus);
+router.get("/buses", BusController.getAllBuses);
+router.get("/buses/:id", BusController.getBusById);
+router.put("/buses/:id", BusController.updateBus);
+router.delete("/buses/:id", BusController.deleteBus);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const AuthService = require("../services/authService");
 
 class AuthController {
-  async register(req, res, next) {
+  static async register(req, res, next) {
     try {
       const user = await AuthService.register(req.body);
       res.status(201).json({ success: true, data: user });
@@ -10,7 +10,7 @@ class AuthController {
     }
   }
 
-  async login(req, res, next) {
+  static async login(req, res, next) {
     try {
       const token = await AuthService.login(req.body.email, req.body.password);
       res.status(200).json({ success: true, token });
@@ -20,4 +20,4 @@ class AuthController {
   }
 }
 
-module.exports = new AuthController();
+module.exports = AuthController;

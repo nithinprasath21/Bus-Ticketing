@@ -1,11 +1,11 @@
-const logger = require("../logs/appLogger");
+const logger = require("../utils/logger");
 
 const errorMiddleware = (err, req, res, next) => {
   logger.error(`${err.message} - ${req.method} ${req.url}`);
-  
-  res.status(err.statusCode || 500).json({
+
+  res.status(400).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message: err.message || "Bad Request",
   });
 };
 

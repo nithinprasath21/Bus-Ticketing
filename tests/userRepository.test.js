@@ -16,13 +16,13 @@ afterAll(async () => {
 });
 
 describe("User Repository", () => {
-  test("creates a new user", async () => {
+  test("should create a new user", async () => {
     const user = await UserRepository.createUser({ name: "Test", email: "test@example.com" });
 
     expect(user.email).toBe("test@example.com");
   });
 
-  test("finds a user by email", async () => {
+  test("should find a user by email", async () => {
     await User.create({ email: "test@example.com", password: "hashedPass" });
 
     const user = await UserRepository.findByEmail("test@example.com");

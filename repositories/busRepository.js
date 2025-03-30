@@ -1,45 +1,25 @@
 const Bus = require("../models/busModel");
 
 class BusRepository {
-  async createBus(busData) {
-    try {
-      return await Bus.create(busData);
-    } catch (error) {
-      throw new Error(`Error creating bus: ${error.message}`);
-    }
+  static async createBus(busData) {
+    return await Bus.create(busData);
   }
 
-  async getAllBuses() {
-    try {
-      return await Bus.find();
-    } catch (error) {
-      throw new Error(`Error fetching buses: ${error.message}`);
-    }
+  static async getAllBuses() {
+    return await Bus.find();
   }
 
-  async getBusById(busId) {
-    try {
-      return await Bus.findById(busId);
-    } catch (error) {
-      throw new Error(`Error fetching bus by ID: ${error.message}`);
-    }
+  static async getBusById(busId) {
+    return await Bus.findById(busId);
   }
 
-  async updateBus(busId, busData) {
-    try {
-      return await Bus.findByIdAndUpdate(busId, busData, { new: true });
-    } catch (error) {
-      throw new Error(`Error updating bus: ${error.message}`);
-    }
+  static async updateBus(busId, busData) {
+    return await Bus.findByIdAndUpdate(busId, busData, { new: true });
   }
 
-  async deleteBus(busId) {
-    try {
-      return await Bus.findByIdAndDelete(busId);
-    } catch (error) {
-      throw new Error(`Error deleting bus: ${error.message}`);
-    }
+  static async deleteBus(busId) {
+    return await Bus.findByIdAndDelete(busId);
   }
 }
 
-module.exports = new BusRepository();
+module.exports = BusRepository;

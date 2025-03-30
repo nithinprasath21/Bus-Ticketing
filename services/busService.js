@@ -1,45 +1,25 @@
 const BusRepository = require("../repositories/busRepository");
 
 class BusService {
-  async createBus(busData) {
-    try {
-      return await BusRepository.createBus(busData);
-    } catch (error) {
-      throw new Error(`Error creating bus: ${error.message}`);
-    }
+  static async createBus(busData) {
+    return await BusRepository.createBus(busData);
   }
 
-  async getAllBuses() {
-    try {
-      return await BusRepository.getAllBuses();
-    } catch (error) {
-      throw new Error(`Error fetching buses: ${error.message}`);
-    }
+  static async getAllBuses() {
+    return await BusRepository.getAllBuses();
   }
 
-  async getBusById(busId) {
-    try {
-      return await BusRepository.getBusById(busId);
-    } catch (error) {
-      throw new Error(`Error fetching bus by ID: ${error.message}`);
-    }
+  static async getBusById(busId) {
+    return await BusRepository.getBusById(busId);
   }
 
-  async updateBus(busId, busData) {
-    try {
-      return await BusRepository.updateBus(busId, busData);
-    } catch (error) {
-      throw new Error(`Error updating bus: ${error.message}`);
-    }
+  static async updateBus(busId, busData) {
+    return await BusRepository.updateBus(busId, busData);
   }
 
-  async deleteBus(busId) {
-    try {
-      return await BusRepository.deleteBus(busId);
-    } catch (error) {
-      throw new Error(`Error deleting bus: ${error.message}`);
-    }
+  static async deleteBus(busId) {
+    return await BusRepository.deleteBus(busId);
   }
 }
 
-module.exports = new BusService();
+module.exports = BusService;
