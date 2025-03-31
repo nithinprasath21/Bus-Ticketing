@@ -63,68 +63,147 @@ The backend is built using **Node.js and Express.js** and consists of:
 
 ---
 
-## Logic Flow
-1. **User Login/Register**
-   - Users sign up and log in using JWT authentication.
+## **Logic Flow**
+1. **User Authentication**
+   - Users and operators can register and log in using JWT authentication.
+   - Users can reset passwords if needed.
 
-2. **Searching for Buses**
-   - Users enter source, destination, and date.
-   - Backend fetches and filters available buses.
+2. **Bus Search & Booking**
+   - Passengers search for buses using source, destination, and date.
+   - They check seat availability and book tickets.
 
-3. **Selecting Seats & Booking**
-   - Users select available seats.
-   - Seat availability is updated in real-time.
+3. **Payment Processing**
+   - Users complete payment for their bookings.
+   - Upon successful payment, an e-ticket is generated.
 
-4. **Payment Processing**
-   - Users proceed to payment.
-   - On success, an e-ticket is generated.
-
-5. **Trip Management (Operators & Admins)**
+4. **Operator & Admin Controls**
    - Operators manage trips, pricing, and availability.
-   - Admins oversee cancellations and disputes.
+   - Admins oversee user management, cancellations, and disputes.
 
 ---
 
-## API Routes
-### **Authentication (User & Admin)**
-- `POST /api/auth/register` → Register a new user
-- `POST /api/auth/login` → User login
-- `POST /api/auth/admin-login` → Admin login
+## **API Routes**
 
-### **Bus & Trip Management**
-- `POST /api/bus/add` → Add a new bus (Operator only)
-- `GET /api/bus/list` → Get available buses
-- `POST /api/trip/add` → Create a new trip
-- `GET /api/trip/search` → Search trips
-
-### **Booking & Payments**
-- `POST /api/booking/book` → Book a seat
-- `GET /api/booking/history` → View booking history
-- `POST /api/payment/process` → Process payment
-
-### **Admin Controls**
-- `GET /api/admin/users` → View all users
-- `POST /api/admin/block-user` → Block a user
-- `DELETE /api/admin/delete-trip` → Remove a trip
+### **1. Authentication APIs**
+| Method | Endpoint | Description |
+|--------|---------|-------------|
+| POST | `/api/auth/register` | Register a new user/operator |
+| POST | `/api/auth/login` | Authenticate user/operator and receive a JWT token |
+| POST | `/api/auth/logout` | Logout the authenticated user |
+| POST | `/api/auth/forgot-password` | Initiate password reset process |
 
 ---
 
+### **2. Passenger APIs**
+| Method | Endpoint | Description |
+|--------|---------|-------------|
+| GET | `/api/passengers/search` | Search available buses by source, destination, and date |
+| GET | `/api/passengers/seats/:busId` | Check seat availability for a specific bus |
+| POST | `/api/passengers/bookings` | Book a ticket for a trip |
+| GET | `/api/passengers/bookings` | View user's booking history |
+| DELETE | `/api/passengers/bookings/:id` | Cancel a booking |
+| PUT | `/api/passengers/profile` | Update passenger profile details |
+
+---
+
+### **3. Operator APIs**
+| Method | Endpoint | Description |
+|--------|---------|-------------|
+| POST | `/api/operators/register` | Register a new operator |
+| POST | `/api/trips` | Create a new trip |
+| PUT | `/api/trips/:id` | Modify trip details |
+| DELETE | `/api/trips/:id` | Cancel a trip |
+| GET | `/api/trips/:id/bookings` | View bookings for a specific trip |
+
+---
+
+### **4. Bus APIs**
+| Method | Endpoint | Description |
+|--------|---------|-------------|
+| POST | `/api/buses` | Create a new bus entry |
+| GET | `/api/buses` | Retrieve a list of all available buses |
+| GET | `/api/buses/:id` | Get details of a specific bus by ID |
+| PUT | `/api/buses/:id` | Update details of a specific bus |
+| DELETE | `/api/buses/:id` | Delete a specific bus entry |
+
+---
+
+### **5. Admin APIs**
+| Method | Endpoint | Description |
+|--------|---------|-------------|
+| GET | `/api/admin/users` | Retrieve a list of all users/operators |
+| PUT | `/api/admin/users/:id/block` | Block a specific user |
+| PUT | `/api/admin/users/:id/unblock` | Unblock a specific user |
+| GET | `/api/admin/trips/:id` | Get details of a specific trip |
+| DELETE | `/api/admin/trips/:id` | Cancel a specific trip |
+| GET | `/api/admin/users/:id/bookings` | View all bookings of a specific user |
+| DELETE | `/api/admin/users/:id/bookings/:bookingId` | Delete a specific booking of a user |
+
+---
+
+## **File Structure**
 
 ## File Structure
 ```
-Project/
-│── db.js  # Database Connection
-│── index.js  # Main Server File
-│── models/
-│   ├── bookingSchema.js
-│   ├── busSchema.js
-│   ├── cancellationSchema.js
-│   ├── feedbackSchema.js
-│   ├── operatorSchema.js
-│   ├── paymentSchema.js
-│   ├── tripSchema.js
-│   ├── userSchema.js
+Bus-Ticketing/
+│── src/
+│   ├── logs/
+│   │   ├── app.log
+│   │   ├── errors.log
+│   │
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── busController.js
+│   │   ├── operatorController.js
+│   │   ├── passengerController.js
+│   │   ├── adminController.js
+│   │
+│   ├── middlewares/
+│   │   ├── authMiddleware.js
+│   │   ├── errorMiddleware.js
+│   │
+│   ├── models/
+│   │   ├── bookingModel.js
+│   │   ├── busModel.js
+│   │   ├── tripModel.js
+│   │   ├── userModel.js
+│   │   ├── operatorModel.js
+│   │   ├── adminModel.js
+│   │   ├── cancellationModel.js
+│   │   ├── feedbackModel.js
+│   │   ├── paymentModel.js
+│   │
+│   ├── repositories/
+│   │   ├── authRepository.js
+│   │   ├── adminRepository.js
+│   │   ├── busRepository.js
+│   │   ├── operatorRepository.js
+│   │   ├── passengerRepository.js
+│   │
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── busRoutes.js
+│   │   ├── operatorRoutes.js
+│   │   ├── passengerRoutes.js
+│   │   ├── adminRoutes.js
+│   │
+│   ├── services/
+│   │   ├── authService.js
+│   │   ├── busService.js
+│   │   ├── operatorService.js
+│   │   ├── passengerService.js
+│   │   ├── adminService.js
+│   │
+│   ├── utils/
+│   │   ├── jwtUtils.js
+│   │   ├── logger.js
+│   │   ├── passwordUtils.js
+│   │
 │── .env
+│── db.js
+│── index.js
+│── package.json
+
 ```
 
 ---
