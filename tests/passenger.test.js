@@ -6,7 +6,14 @@ jest.mock("../repositories/passengerRepository");
 describe("Passenger Service", () => {
   const mockBus = { _id: "bus123", availableSeats: ["A1", "A2"], price: 100 };
   const mockTrip = { _id: "trip123", busId: "bus123", availableSeats: ["A1", "A2"], status: "active", price: 100 };
-  const mockBooking = { _id: "booking123", userId: "user123", tripId: "trip123", selectedSeats: ["A1"], totalPrice: 100, status: "confirmed" };
+  const mockBooking = { 
+    _id: "booking123", 
+    userId: "user123", 
+    tripId: "trip123", 
+    selectedSeats: ["A1"], 
+    totalPrice: 100, 
+    status: "confirmed" 
+  };
 
   test("should search for available buses", async () => {
     PassengerRepository.searchBuses.mockResolvedValue([mockTrip]);
@@ -14,6 +21,7 @@ describe("Passenger Service", () => {
     const result = await PassengerService.searchBuses({ source: "A", destination: "B", date: "2025-04-01" });
 
     expect(result).toEqual([mockTrip]);
+    expect(PassengerRepository.searchBuses).toHaveBeenCalledWith({ source: "A", destination: "B", date: "2025-04-01" });
   });
 
   test("should check seat availability", async () => {
@@ -22,6 +30,7 @@ describe("Passenger Service", () => {
     const result = await PassengerService.checkSeatAvailability("bus123");
 
     expect(result).toEqual(["A1", "A2"]);
+    expect(PassengerRepository.getAvailableSeats).toHaveBeenCalledWith("bus123");
   });
 
   test("should successfully book a ticket", async () => {
@@ -30,6 +39,7 @@ describe("Passenger Service", () => {
     const result = await PassengerService.bookTicket("user123", { tripId: "trip123", selectedSeats: ["A1"] });
 
     expect(result).toEqual(mockBooking);
+    expect(PassengerRepository.createBooking).toHaveBeenCalledWith("user123", { tripId: "trip123", selectedSeats: ["A1"] });
   });
 
   test("should cancel a booking", async () => {
@@ -39,6 +49,7 @@ describe("Passenger Service", () => {
     const result = await PassengerService.cancelBooking("user123", "booking123");
 
     expect(result).toEqual(canceledBooking);
+    expect(PassengerRepository.cancelBooking).toHaveBeenCalledWith("user123", "booking123");
   });
 
   test("should update user profile", async () => {
@@ -48,5 +59,6 @@ describe("Passenger Service", () => {
     const result = await PassengerService.updateProfile("user123", { name: "New Name", email: "new@example.com" });
 
     expect(result).toEqual(updatedUser);
+    expect(PassengerRepository.updateUserProfile).toHaveBeenCalledWith("user123", { name: "New Name", email: "new@example.com" });
   });
 });

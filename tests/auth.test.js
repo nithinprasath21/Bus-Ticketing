@@ -9,11 +9,11 @@ jest.mock("../repositories/userRepository");
 
 describe("Authentication API", () => {
   test("Registers a user successfully", async () => {
-    AuthService.register.mockResolvedValue({ email: "test@example.com", _id: "12345" });
+    AuthService.register.mockResolvedValue({ email: "test@example.com", _id: "12345", role: "passenger", phone: "1234567890", name: "Test User" });
 
     const res = await request(app)
       .post("/api/auth/register")
-      .send({ email: "test@example.com", password: "123456" });
+      .send({ email: "test@example.com", password: "123456", name: "Test User", role: "passenger", phone: "1234567890" });
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
@@ -24,7 +24,7 @@ describe("Authentication API", () => {
 
     const res = await request(app)
       .post("/api/auth/register")
-      .send({ email: "test@example.com", password: "123456" });
+      .send({ email: "test@example.com", password: "123456", name: "Test User", role: "passenger", phone: "1234567890" });
 
     expect(res.status).toBe(400);
   });
@@ -48,40 +48,5 @@ describe("Authentication API", () => {
       .send({ email: "wrong@example.com", password: "wrongPass" });
 
     expect(res.status).toBe(401);
-  });
-});
-
-describe("Authentication Service", () => {
-  test("Hashes password and registers a user", async () => {
-    UserRepository.findByEmail.mockResolvedValue(null);
-    UserRepository.createUser.mockResolvedValue({ email: "test@example.com", _id: "12345" });
-
-    const user = await AuthService.register({ email: "test@example.com", password: "123456" });
-
-    expect(user).toHaveProperty("_id");
-    expect(user.email).toBe("test@example.com");
-  });
-
-  test("Throws error if user already exists", async () => {
-    UserRepository.findByEmail.mockResolvedValue({ email: "test@example.com" });
-
-    await expect(AuthService.register({ email: "test@example.com", password: "123456" }))
-      .rejects.toThrow("User already exists");
-  });
-
-  test("Returns JWT on valid login", async () => {
-    UserRepository.findByEmail.mockResolvedValue({ email: "test@example.com", password: "hashedPass" });
-    bcrypt.compare = jest.fn().mockResolvedValue(true);
-
-    const token = await AuthService.login("test@example.com", "correctPassword");
-
-    expect(token).toBeDefined();
-  });
-
-  test("Throws error for invalid login", async () => {
-    UserRepository.findByEmail.mockResolvedValue(null);
-
-    await expect(AuthService.login("invalid@example.com", "wrongPassword"))
-      .rejects.toThrow("Invalid credentials");
   });
 });

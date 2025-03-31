@@ -17,13 +17,13 @@ afterAll(async () => {
 
 describe("User Repository", () => {
   test("should create a new user", async () => {
-    const user = await UserRepository.createUser({ name: "Test", email: "test@example.com" });
+    const user = await UserRepository.createUser({ name: "Test", email: "test@example.com", password: "123456", phone: "1234567890", role: "passenger" });
 
     expect(user.email).toBe("test@example.com");
   });
 
   test("should find a user by email", async () => {
-    await User.create({ email: "test@example.com", password: "hashedPass" });
+    await User.create({ name: "Test", email: "test@example.com", password: "hashedPass", phone: "1234567890", role: "passenger" });
 
     const user = await UserRepository.findByEmail("test@example.com");
 

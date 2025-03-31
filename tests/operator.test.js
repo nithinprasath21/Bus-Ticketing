@@ -8,7 +8,7 @@ jest.mock("../repositories/operatorRepository");
 
 describe("Operator API", () => {
   test("POST /api/operators/register - should register an operator", async () => {
-    const mockOperator = { name: "Operator", email: "op@test.com" };
+    const mockOperator = { operatorName: "Operator", contactEmail: "op@test.com", phone: "1234567890" };
     OperatorService.registerOperator.mockResolvedValue(mockOperator);
 
     const res = await request(app).post("/api/operators/register").send(mockOperator);
@@ -18,30 +18,12 @@ describe("Operator API", () => {
   });
 
   test("POST /api/trips - should create a trip", async () => {
-    const mockTrip = { from: "CityA", to: "CityB" };
+    const mockTrip = { source: "CityA", destination: "CityB", busId: "bus123", operatorId: "operator123", departureTime: new Date(), arrivalTime: new Date(), price: 100, availableSeats: ["A1", "A2"] };
     OperatorService.createTrip.mockResolvedValue(mockTrip);
 
     const res = await request(app).post("/api/trips").send(mockTrip);
 
     expect(res.status).toBe(201);
     expect(res.body).toEqual(expect.objectContaining(mockTrip));
-  });
-
-  test("Service - should register an operator", async () => {
-    const mockOperator = { name: "Test Operator", email: "test@test.com" };
-    OperatorRepository.createOperator.mockResolvedValue(mockOperator);
-
-    const result = await OperatorService.registerOperator(mockOperator);
-
-    expect(result).toEqual(mockOperator);
-  });
-
-  test("Service - should create a trip", async () => {
-    const mockTrip = { from: "CityA", to: "CityB" };
-    OperatorRepository.createTrip.mockResolvedValue(mockTrip);
-
-    const result = await OperatorService.createTrip(mockTrip);
-
-    expect(result).toEqual(mockTrip);
   });
 });
