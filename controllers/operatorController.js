@@ -1,50 +1,201 @@
-const OperatorService = require("../services/operatorService");
+import OperatorService from "../services/operatorService.js";
 
 class OperatorController {
-  static async registerOperator(req, res, next) {
-    try {
-      const operator = await OperatorService.registerOperator(req.body);
-      res.status(201).json({ success: true, data: operator });
-    } catch (error) {
-      next(error);
+    constructor() {
+        this.operatorService = new OperatorService();
     }
-  }
 
-  static async createTrip(req, res, next) {
-    try {
-      const trip = await OperatorService.createTrip(req.body);
-      res.status(201).json({ success: true, data: trip });
-    } catch (error) {
-      next(error);
-    }
-  }
+    getBuses = async (req, res) => {
+        try {
+            const buses = await this.operatorService.getBuses();
+            return res.status(200).json({
+                success: true,
+                message: "Buses fetched successfully",
+                data: buses
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async modifyTrip(req, res, next) {
-    try {
-      const updatedTrip = await OperatorService.modifyTrip(req.params.id, req.body);
-      res.status(200).json({ success: true, data: updatedTrip });
-    } catch (error) {
-      next(error);
-    }
-  }
+    getBus = async (req, res) => {
+        try {
+            const busId = req.params.id;
+            const bus = await this.operatorService.getBus(busId);
+            return res.status(200).json({
+                success: true,
+                message: "Bus details fetched successfully",
+                data: bus
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async cancelTrip(req, res, next) {
-    try {
-      await OperatorService.cancelTrip(req.params.id);
-      res.status(200).json({ success: true, message: "Trip canceled successfully" });
-    } catch (error) {
-      next(error);
-    }
-  }
+    createBus = async (req, res) => {
+        try {
+            const bus = await this.operatorService.createBus(req.body);
+            return res.status(201).json({
+                success: true,
+                message: "Bus created successfully",
+                data: bus
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async viewTripBookings(req, res, next) {
-    try {
-      const bookings = await OperatorService.viewTripBookings(req.params.id);
-      res.status(200).json({ success: true, data: bookings });
-    } catch (error) {
-      next(error);
-    }
-  }
+    updateBus = async (req, res) => {
+        try {
+            const busId = req.params.id;
+            const bus = await this.operatorService.updateBus(busId, req.body);
+            return res.status(200).json({
+                success: true,
+                message: "Bus updated successfully",
+                data: bus
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    deleteBus = async (req, res) => {
+        try {
+            await this.operatorService.deleteBus(req.params.id);
+            return res.status(200).json({
+                success: true,
+                message: "Bus deleted successfully",
+                data: null
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    createTrip = async (req, res) => {
+        try {
+            const trip = await this.operatorService.createTrip(req.body);
+            return res.status(201).json({
+                success: true,
+                message: "Trip created successfully",
+                data: trip
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    getMyTrips = async (req, res) => {
+        try {
+            const trips = await this.operatorService.getMyTrips(req.operator.id);
+            return res.status(200).json({
+                success: true,
+                message: "Trips fetched successfully",
+                data: trips
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    getTrip = async (req, res) => {
+        try {
+            const tripId = req.params.id;
+            const trip = await this.operatorService.getTrip(tripId);
+            return res.status(200).json({
+                success: true,
+                message: "Trip details fetched successfully",
+                data: trip
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    updateTrip = async (req, res) => {
+        try {
+            const tripId = req.params.id;
+            const trip = await this.operatorService.updateTrip(tripId, req.body);
+            return res.status(200).json({
+                success: true,
+                message: "Trip updated successfully",
+                data: trip
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    deleteTrip = async (req, res) => {
+        try {
+            await this.operatorService.deleteTrip(req.params.id);
+            return res.status(200).json({
+                success: true,
+                message: "Trip deleted successfully",
+                data: null
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    cancelTrip = async (req, res) => {
+        try {
+            const tripId = req.params.id;
+            const trip = await this.operatorService.cancelTrip(tripId);
+            return res.status(200).json({
+                success: true,
+                message: "Trip canceled successfully",
+                data: trip
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 }
 
-module.exports = OperatorController;
+export default OperatorController;

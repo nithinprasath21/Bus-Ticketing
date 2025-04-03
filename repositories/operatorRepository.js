@@ -1,27 +1,51 @@
 const Operator = require("../models/operatorModel");
+const Bus = require("../models/busModel");
 const Trip = require("../models/tripModel");
-const Booking = require("../models/bookingModel");
 
 class OperatorRepository {
-  static async createOperator(operatorData) {
-    return await Operator.create(operatorData);
-  }
+    async getBuses() {
+        return Bus.find();
+    }
 
-  static async createTrip(tripData) {
-    return await Trip.create(tripData);
-  }
+    async getBusById(busId) {
+        return Bus.findById(busId);
+    }
 
-  static async updateTrip(tripId, updateData) {
-    return await Trip.findByIdAndUpdate(tripId, updateData, { new: true });
-  }
+    async createBus(busData) {
+        return Bus.create(busData);
+    }
 
-  static async deleteTrip(tripId) {
-    return await Trip.findByIdAndDelete(tripId);
-  }
+    async updateBus(busId, updateData) {
+        return Bus.findByIdAndUpdate(busId, updateData, { new: true });
+    }
 
-  static async getTripBookings(tripId) {
-    return await Booking.find({ tripId }).populate("userId", "name email");
-  }
+    async deleteBus(busId) {
+        return Bus.findByIdAndDelete(busId);
+    }
+
+    async createTrip(tripData) {
+        return Trip.create(tripData);
+    }
+
+    async getTripsByOperator(operatorId) {
+        return Trip.find({ operatorId });
+    }
+
+    async getTripById(tripId) {
+        return Trip.findById(tripId);
+    }
+
+    async updateTrip(tripId, updateData) {
+        return Trip.findByIdAndUpdate(tripId, updateData, { new: true });
+    }
+
+    async deleteTrip(tripId) {
+        return Trip.findByIdAndDelete(tripId);
+    }
+
+    async cancelTrip(tripId) {
+        return Trip.findByIdAndUpdate(tripId, { status: "canceled" }, { new: true });
+    }
 }
 
 module.exports = OperatorRepository;

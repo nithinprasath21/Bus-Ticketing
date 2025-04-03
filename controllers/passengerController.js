@@ -1,59 +1,150 @@
-const PassengerService = require("../services/passengerService");
+import PassengerService from "../services/passengerService.js";
 
 class PassengerController {
-  static async searchBuses(req, res, next) {
-    try {
-      const buses = await PassengerService.searchBuses(req.query);
-      res.status(200).json({ success: true, data: buses });
-    } catch (error) {
-      next(error);
+    constructor() {
+        this.passengerService = new PassengerService();
     }
-  }
 
-  static async checkSeatAvailability(req, res, next) {
-    try {
-      const seats = await PassengerService.checkSeatAvailability(req.params.id);
-      res.status(200).json({ success: true, data: seats });
-    } catch (error) {
-      next(error);
-    }
-  }
+    searchBuses = async (req, res) => {
+        try {
+            const buses = await this.passengerService.searchBuses(req.query);
+            return res.status(200).json({
+                success: true,
+                message: "Buses found successfully",
+                data: buses
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async bookTicket(req, res, next) {
-    try {
-      const booking = await PassengerService.bookTicket(req.user.id, req.body);
-      res.status(201).json({ success: true, data: booking });
-    } catch (error) {
-      next(error);
-    }
-  }
+    checkSeatAvailability = async (req, res) => {
+        try {
+            const busId = req.params.id;
+            const seats = await this.passengerService.checkSeatAvailability(busId);
+            return res.status(200).json({
+                success: true,
+                message: "Seat availability fetched successfully",
+                data: seats
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async viewBookingHistory(req, res, next) {
-    try {
-      const bookings = await PassengerService.viewBookingHistory(req.user.id);
-      res.status(200).json({ success: true, data: bookings });
-    } catch (error) {
-      next(error);
-    }
-  }
+    bookTicket = async (req, res) => {
+        try {
+            const booking = await this.passengerService.bookTicket(req.user.id, req.body);
+            return res.status(201).json({
+                success: true,
+                message: "Ticket booked successfully",
+                data: booking
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async cancelBooking(req, res, next) {
-    try {
-      await PassengerService.cancelBooking(req.user.id, req.params.id);
-      res.status(200).json({ success: true, message: "Booking canceled successfully" });
-    } catch (error) {
-      next(error);
-    }
-  }
+    viewBookingHistory = async (req, res) => {
+        try {
+            const bookings = await this.passengerService.getBookingHistory(req.user.id);
+            return res.status(200).json({
+                success: true,
+                message: "Booking history fetched successfully",
+                data: bookings
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async updateProfile(req, res, next) {
-    try {
-      const updatedUser = await PassengerService.updateProfile(req.user.id, req.body);
-      res.status(200).json({ success: true, data: updatedUser });
-    } catch (error) {
-      next(error);
-    }
-  }
+    getBooking = async (req, res) => {
+        try {
+            const bookingId = req.params.id;
+            const booking = await this.passengerService.getBooking(req.user.id, bookingId);
+            return res.status(200).json({
+                success: true,
+                message: "Booking details fetched successfully",
+                data: booking
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    cancelBooking = async (req, res) => {
+        try {
+            const bookingId = req.params.id;
+            const booking = await this.passengerService.cancelBooking(req.user.id, bookingId);
+            return res.status(200).json({
+                success: true,
+                message: "Booking canceled successfully",
+                data: booking
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    viewProfile = async (req, res) => {
+        try {
+            const userId = req.params.id;
+            const profile = await this.passengerService.getProfile(userId);
+            return res.status(200).json({
+                success: true,
+                message: "Profile fetched successfully",
+                data: profile
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    updateProfile = async (req, res) => {
+        try {
+            const userId = req.params.id;
+            const updatedProfile = await this.passengerService.updateProfile(userId, req.body);
+            return res.status(200).json({
+                success: true,
+                message: "Profile updated successfully",
+                data: updatedProfile
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 }
 
-module.exports = PassengerController;
+export default PassengerController;

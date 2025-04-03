@@ -1,17 +1,25 @@
 const User = require("../models/userModel");
 
 class AuthRepository {
-  static async findByEmail(email) {
-    return await User.findOne({ email });
-  }
+    async createUser(userData) {
+        return User.create(userData);
+    }
 
-  static async createUser(userData) {
-    return await User.create(userData);
-  }
+    async findUserByEmail(email) {
+        return User.findOne({ email });
+    }
 
-  static async saveResetToken(email, resetToken) {
-    return await User.findOneAndUpdate({ email }, { resetToken }, { new: true });
-  }
+    async findUserById(userId) {
+        return User.findById(userId);
+    }
+
+    async updateUser(userId, updateData) {
+        return User.findByIdAndUpdate(userId, updateData, { new: true });
+    }
+
+    async saveUser(user) {
+        return user.save();
+    }
 }
 
 module.exports = AuthRepository;

@@ -1,29 +1,51 @@
 const PassengerRepository = require("../repositories/passengerRepository");
 
 class PassengerService {
-  static async searchBuses(filters) {
-    return await PassengerRepository.searchBuses(filters);
-  }
+    constructor() {
+        this.passengerRepository = new PassengerRepository();
+    }
 
-  static async checkSeatAvailability(busId) {
-    return await PassengerRepository.getAvailableSeats(busId);
-  }
+    async searchBuses(query) {
+        return this.passengerRepository.searchBuses(query);
+    }
 
-  static async bookTicket(userId, bookingData) {
-    return await PassengerRepository.createBooking(userId, bookingData);
-  }
+    async checkSeatAvailability(busId) {
+        const seats = await this.passengerRepository.checkSeatAvailability(busId);
+        if (!seats) throw new Error("Bus not found or no available seats");
+        return seats;
+    }
 
-  static async viewBookingHistory(userId) {
-    return await PassengerRepository.getBookingHistory(userId);
-  }
+    async bookTicket(userId, bookingData) {
+        const booking = await this.passengerRepository.createBooking({ ...bookingData, userId });
+        if (!booking) throw new Error("Booking failed");
+        return booking;
+    }
 
-  static async cancelBooking(userId, bookingId) {
-    return await PassengerRepository.cancelBooking(userId, bookingId);
-  }
+    async getBookingHistory(userId) {
+        return this.passengerRepository.getBookingHistory(userId);
+    }
 
-  static async updateProfile(userId, profileData) {
-    return await PassengerRepository.updateUserProfile(userId, profileData);
-  }
+    async getBooking(userId, bookingId) {
+        const booking = await this.passengerRepository.getBookingById(bookingId);
+        if (!booking || booking.userId.toString() !== userId) throw new Error("Booking not found or unauthorized");
+        return booking;
+    }
+
+    async cancelBooking(userId, bookingId, reason = "User canceled") {
+        const booking = await this.passengerRepository.cancelBooking(bookingId, userId, reason);
+        if (!booking) throw new Error("Booking not found or already canceled");
+        return booking;
+    }
+
+    async getProfile(userId) {
+        return this.passengerRepository.getUserProfile(userId);
+    }
+
+    async updateProfile(userId, updateData) {
+        const updatedProfile = await this.passengerRepository.updateUserProfile(userId, updateData);
+        if (!updatedProfile) throw new Error("Profile update failed");
+        return updatedProfile;
+    }
 }
 
 module.exports = PassengerService;

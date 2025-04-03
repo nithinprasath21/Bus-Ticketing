@@ -1,36 +1,63 @@
-const User = require("../models/userModel");
-const Trip = require("../models/tripModel");
-const Booking = require("../models/bookingModel");
+import userModel from "../models/userModel.js";
+import tripModel from "../models/tripModel.js";
+import bookingModel from "../models/bookingModel.js";
 
 class AdminRepository {
-  static async getAllUsers() {
-    return await User.find({}, "-password");
-  }
+    async findAllUsers() {
+        return await userModel.find({ role: "passenger" });
+    }
 
-  static async updateUserStatus(userId, isBlocked) {
-    const user = await User.findByIdAndUpdate(userId, { isBlocked }, { new: true });
-    if (!user) throw new Error("User not found");
-  }
+    async findUserById(userId) {
+        return await userModel.findById(userId);
+    }
 
-  static async getTripDetails(tripId) {
-    const trip = await Trip.findById(tripId);
-    if (!trip) throw new Error("Trip not found");
-    return trip;
-  }
+    async updateUser(userId, updateData) {
+        return await userModel.findByIdAndUpdate(userId, updateData, { new: true });
+    }
 
-  static async cancelTrip(tripId) {
-    const trip = await Trip.findByIdAndUpdate(tripId, { status: "canceled" }, { new: true });
-    if (!trip) throw new Error("Trip not found");
-  }
+    async findAllOperators() {
+        return await userModel.find({ role: "operator" });
+    }
 
-  static async getPassengerBookings(userId) {
-    return await Booking.find({ userId }).populate("tripId");
-  }
+    async findOperatorById(operatorId) {
+        return await userModel.findById(operatorId);
+    }
 
-  static async deletePassengerBooking(userId, bookingId) {
-    const booking = await Booking.findOneAndDelete({ _id: bookingId, userId });
-    if (!booking) throw new Error("Booking not found");
-  }
+    async findAllTrips() {
+        return await tripModel.find();
+    }
+
+    async findTripById(tripId) {
+        return await tripModel.findById(tripId);
+    }
+
+    async updateTrip(tripId, updateData) {
+        return await tripModel.findByIdAndUpdate(tripId, { $set: updateData }, { new: true });
+    }
+
+    async saveTrip(trip) {
+        return await trip.save();
+    }
+
+    async saveUser(user) {
+        return await user.save();
+    }
+
+    async saveOperator(operator) {
+        return await operator.save();
+    }
+
+    async findBookingsByPassenger(userId) {
+        return await bookingModel.find({ passenger: userId });
+    }
+
+    async findBookingById(bookingId) {
+        return await bookingModel.findById(bookingId);
+    }
+
+    async deleteBooking(bookingId) {
+        return await bookingModel.findByIdAndDelete(bookingId);
+    }
 }
 
-module.exports = AdminRepository;
+export default AdminRepository;

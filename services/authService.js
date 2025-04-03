@@ -1,34 +1,49 @@
 const bcrypt = require("bcryptjs");
-const jwtUtils = require("../utils/jwtUtils");
+const jwt = require("jsonwebtoken");
 const AuthRepository = require("../repositories/authRepository");
-const { generateResetToken, sendResetEmail } = require("../utils/passwordUtils");
 
 class AuthService {
-  static async register(userData) {
-    const existingUser = await AuthRepository.findByEmail(userData.email);
-    if (existingUser) throw new Error("User already exists");
-
-    userData.password = await bcrypt.hash(userData.password, 10);
-    return await AuthRepository.createUser(userData);
-  }
-
-  static async login(email, password) {
-    const user = await AuthRepository.findByEmail(email);
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new Error("Invalid credentials");
+    constructor() {
+        this.authRepository = new AuthRepository();
     }
 
-    return jwtUtils.generateToken(user);
-  }
+    async register(userData) {
+        const { name, email, phone, password, role } = userData;
 
-  static async forgotPassword(email) {
-    const user = await AuthRepository.findByEmail(email);
-    if (!user) throw new Error("User not found");
+        if (await this.authRepository.findUserByEmail(email)) {
+            throw new Error("User already exists with this email");
+        }
 
-    const resetToken = generateResetToken();
-    await AuthRepository.saveResetToken(email, resetToken);
-    await sendResetEmail(email, resetToken);
-  }
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        return this.authRepository.createUser({
+            name,
+            email,
+            phone,
+            password: hashedPassword,
+            role
+        });
+    }
+
+    async login(email, password) {
+        const user = await this.authRepository.findUserByEmail(email);
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            throw new Error("Invalid email or password");
+        }
+
+        return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    }
+
+    async logout(user) {
+        return true;
+    }
+
+    async forgotPassword(email) {
+        if (!await this.authRepository.findUserByEmail(email)) {
+            throw new Error("User not found");
+        }
+        return true;
+    }
 }
 
 module.exports = AuthService;

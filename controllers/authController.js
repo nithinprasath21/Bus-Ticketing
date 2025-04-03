@@ -1,41 +1,78 @@
 const AuthService = require("../services/authService");
 
 class AuthController {
-  static async register(req, res, next) {
-    try {
-      const user = await AuthService.register(req.body);
-      res.status(201).json({ success: true, message: "User registered successfully", data: user });
-    } catch (error) {
-      next(error);
+    constructor() {
+        this.authService = new AuthService();
     }
-  }
 
-  static async login(req, res, next) {
-    try {
-      const { email, password } = req.body;
-      const token = await AuthService.login(email, password);
-      res.status(200).json({ success: true, message: "Login successful", token });
-    } catch (error) {
-      next(error);
-    }
-  }
+    register = async (req, res) => {
+        try {
+            const user = await this.authService.register(req.body);
+            return res.status(201).json({
+                success: true,
+                message: "User registered successfully",
+                data: user
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async logout(req, res, next) {
-    try {
-      res.status(200).json({ success: true, message: "Logout successful" });
-    } catch (error) {
-      next(error);
-    }
-  }
+    login = async (req, res) => {
+        try {
+            const { email, password } = req.body;
+            const token = await this.authService.login(email, password);
+            return res.status(200).json({
+                success: true,
+                message: "User logged in successfully",
+                data: { token }
+            });
+        } catch (err) {
+            return res.status(401).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 
-  static async forgotPassword(req, res, next) {
-    try {
-      await AuthService.forgotPassword(req.body.email);
-      res.status(200).json({ success: true, message: "Password reset link sent" });
-    } catch (error) {
-      next(error);
-    }
-  }
+    logout = async (req, res) => {
+        try {
+            await this.authService.logout(req.user);
+            return res.status(200).json({
+                success: true,
+                message: "User logged out successfully",
+                data: null
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
+
+    forgotPassword = async (req, res) => {
+        try {
+            await this.authService.forgotPassword(req.body.email);
+            return res.status(200).json({
+                success: true,
+                message: "Password reset link sent to email",
+                data: null
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                data: null
+            });
+        }
+    };
 }
 
 module.exports = AuthController;

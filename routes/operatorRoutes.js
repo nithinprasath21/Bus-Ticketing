@@ -1,15 +1,22 @@
-const express = require("express");
+import express from 'express';
+import OperatorController from '../controllers/operatorController.js';
+import AuthMiddleware from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-const OperatorController = require("../controllers/operatorController");
-const authMiddleware = require("../middleware/authMiddleware");
+const operatorController = new OperatorController();
+const authMiddleware = new AuthMiddleware();
 
-router.use(authMiddleware.verifyToken);
-router.use(authMiddleware.isOperator);
+router.get('/buses', authMiddleware.protectOperator, operatorController.getBuses);
+router.get('/buses/:id', authMiddleware.protectOperator, operatorController.getBus);
+router.post('/buses', authMiddleware.protectOperator, operatorController.createBus);
+router.patch('/buses/:id', authMiddleware.protectOperator, operatorController.updateBus);
+router.delete('/buses/:id', authMiddleware.protectOperator, operatorController.deleteBus);
 
-router.post("/register", OperatorController.registerOperator);
-router.post("/trips", OperatorController.createTrip);
-router.put("/trips/:id", OperatorController.modifyTrip);
-router.delete("/trips/:id", OperatorController.cancelTrip);
-router.get("/trips/:id/bookings", OperatorController.viewTripBookings);
+router.post('/trips', authMiddleware.protectOperator, operatorController.createTrip);
+router.get('/trips/all', authMiddleware.protectOperator, operatorController.getMyTrips);
+router.get('/trips/:id', authMiddleware.protectOperator, operatorController.getTrip);
+router.patch('/trips/:id', authMiddleware.protectOperator, operatorController.updateTrip);
+router.delete('/trips/:id', authMiddleware.protectOperator, operatorController.deleteTrip);
+router.patch('/trips/:id/cancel', authMiddleware.protectOperator, operatorController.cancelTrip);
 
-module.exports = router;
+export default router;

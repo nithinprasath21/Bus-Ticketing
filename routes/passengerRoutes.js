@@ -1,16 +1,21 @@
-const express = require("express");
-const PassengerController = require("../controllers/passengerController");
-const authMiddleware = require("../middleware/authMiddleware");
+import express from 'express';
+import PassengerController from '../controllers/passengerController.js';
+import AuthMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+const passengerController = new PassengerController();
+const authMiddleware = new AuthMiddleware();
 
-router.use(authMiddleware.verifyToken);
+router.get('/buses/search', passengerController.searchBuses);
+router.get('/buses/:id/seats', passengerController.checkSeatAvailability);
 
-router.get("/buses/search", PassengerController.searchBuses);
-router.get("/buses/:id/seats", PassengerController.checkSeatAvailability);
-router.post("/bookings", PassengerController.bookTicket);
-router.get("/bookings", PassengerController.viewBookingHistory);
-router.delete("/bookings/:id", PassengerController.cancelBooking);
-router.put("/profile", PassengerController.updateProfile);
+router.post('/bookings', authMiddleware.protectUser, passengerController.bookTicket);
+router.get('/bookings', authMiddleware.protectUser, passengerController.viewBookingHistory);
+router.get('/bookings/:id', authMiddleware.protectUser, passengerController.getBooking);
+router.patch("/bookings/:id/cancel", authMiddleware.protectUser, passengerController.cancelBooking);
+router.delete('/bookings/:id', authMiddleware.protectUser, passengerController.cancelBooking);
 
-module.exports = router;
+router.get('/profile/:id', authMiddleware.protectUser, passengerController.viewProfile);
+router.patch('/profile/:id', authMiddleware.protectUser, passengerController.updateProfile);
+
+export default router;
