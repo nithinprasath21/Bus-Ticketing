@@ -1,6 +1,6 @@
-import userModel from "../models/userModel.js";
-import tripModel from "../models/tripModel.js";
-import bookingModel from "../models/bookingModel.js";
+const userModel = require("../models/userModel.js")
+const tripModel = require("../models/tripModel.js")
+const bookingModel = require("../models/bookingModel.js")
 
 class AdminRepository {
     async findAllUsers() {
@@ -60,4 +60,4 @@ class AdminRepository {
     }
 }
 
-export default AdminRepository;
+module.exports = AdminRepository;

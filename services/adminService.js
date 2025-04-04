@@ -1,4 +1,4 @@
-import AdminRepository from "../repositories/adminRepository.js";
+const AdminRepository = require("../repositories/adminRepository.js");
 
 class AdminService {
     constructor() {
@@ -120,4 +120,4 @@ class AdminService {
     }
 }
 
-export default AdminService;
+module.exports = AdminService;

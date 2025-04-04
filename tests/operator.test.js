@@ -1,29 +1,159 @@
-const request = require("supertest");
-const app = require("../index");
+require("dotenv").config();
 const OperatorService = require("../services/operatorService");
-const OperatorRepository = require("../repositories/operatorRepository");
+const busModel = require("../models/busModel");
+const tripModel = require("../models/tripModel");
 
-jest.mock("../services/operatorService");
-jest.mock("../repositories/operatorRepository");
+jest.mock("../models/busModel");
+jest.mock("../models/tripModel");
 
-describe("Operator API", () => {
-  test("POST /api/operators/register - should register an operator", async () => {
-    const mockOperator = { operatorName: "Operator", contactEmail: "op@test.com", phone: "1234567890" };
-    OperatorService.registerOperator.mockResolvedValue(mockOperator);
+describe("OperatorService Unit Tests", () => {
+  let operatorService;
 
-    const res = await request(app).post("/api/operators/register").send(mockOperator);
-
-    expect(res.status).toBe(201);
-    expect(res.body).toEqual(expect.objectContaining(mockOperator));
+  beforeEach(() => {
+    operatorService = new OperatorService();
+    jest.clearAllMocks();
   });
 
-  test("POST /api/trips - should create a trip", async () => {
-    const mockTrip = { source: "CityA", destination: "CityB", busId: "bus123", operatorId: "operator123", departureTime: new Date(), arrivalTime: new Date(), price: 100, availableSeats: ["A1", "A2"] };
-    OperatorService.createTrip.mockResolvedValue(mockTrip);
+  describe("getBuses", () => {
+    it("should return list of buses", async () => {
+      const mockBuses = [{ busName: "Bus 1" }, { busName: "Bus 2" }];
+      busModel.find.mockResolvedValue(mockBuses);
 
-    const res = await request(app).post("/api/trips").send(mockTrip);
+      const result = await operatorService.getBuses();
+      expect(result).toEqual(mockBuses);
+    });
+  });
 
-    expect(res.status).toBe(201);
-    expect(res.body).toEqual(expect.objectContaining(mockTrip));
+  describe("getBus", () => {
+    it("should return a bus by ID", async () => {
+      const mockBus = { id: "bus1", busName: "Bus X" };
+      busModel.findById.mockResolvedValue(mockBus);
+
+      const result = await operatorService.getBus("bus1");
+      expect(result).toEqual(mockBus);
+    });
+
+    it("should throw error if bus not found", async () => {
+      busModel.findById.mockResolvedValue(null);
+      await expect(operatorService.getBus("invalid")).rejects.toThrow("Bus not found");
+    });
+  });
+
+  describe("createBus", () => {
+    it("should create and return a new bus", async () => {
+      const newBus = { busName: "Express", totalSeats: 40 };
+      busModel.create.mockResolvedValue(newBus);
+
+      const result = await operatorService.createBus(newBus);
+      expect(result).toEqual(newBus);
+    });
+  });
+
+  describe("updateBus", () => {
+    it("should update and return the updated bus", async () => {
+      const updatedBus = { id: "bus1", busName: "Updated Bus" };
+      busModel.findByIdAndUpdate.mockResolvedValue(updatedBus);
+
+      const result = await operatorService.updateBus("bus1", { busName: "Updated Bus" });
+      expect(result).toEqual(updatedBus);
+    });
+
+    it("should throw error if update fails", async () => {
+      busModel.findByIdAndUpdate.mockResolvedValue(null);
+      await expect(operatorService.updateBus("invalid", {})).rejects.toThrow("Bus not found or failed to update");
+    });
+  });
+
+  describe("deleteBus", () => {
+    it("should delete a bus", async () => {
+      const deletedBus = { id: "bus1" };
+      busModel.findByIdAndDelete.mockResolvedValue(deletedBus);
+
+      await expect(operatorService.deleteBus("bus1")).resolves.toBeUndefined();
+    });
+
+    it("should throw error if deletion fails", async () => {
+      busModel.findByIdAndDelete.mockResolvedValue(null);
+      await expect(operatorService.deleteBus("invalid")).rejects.toThrow("Bus not found or already deleted");
+    });
+  });
+
+  describe("createTrip", () => {
+    it("should create a trip", async () => {
+      const newTrip = { source: "City A", destination: "City B" };
+      tripModel.create.mockResolvedValue(newTrip);
+
+      const result = await operatorService.createTrip(newTrip);
+      expect(result).toEqual(newTrip);
+    });
+  });
+
+  describe("getMyTrips", () => {
+    it("should return trips by operator ID", async () => {
+      const mockTrips = [{ operatorId: "op1" }, { operatorId: "op1" }];
+      tripModel.find.mockResolvedValue(mockTrips);
+
+      const result = await operatorService.getMyTrips("op1");
+      expect(result).toEqual(mockTrips);
+    });
+  });
+
+  describe("getTrip", () => {
+    it("should return a trip by ID", async () => {
+      const mockTrip = { id: "trip1", source: "X", destination: "Y" };
+      tripModel.findById.mockResolvedValue(mockTrip);
+
+      const result = await operatorService.getTrip("trip1");
+      expect(result).toEqual(mockTrip);
+    });
+
+    it("should throw error if trip not found", async () => {
+      tripModel.findById.mockResolvedValue(null);
+      await expect(operatorService.getTrip("bad")).rejects.toThrow("Trip not found");
+    });
+  });
+
+  describe("updateTrip", () => {
+    it("should update and return trip", async () => {
+      const updatedTrip = { id: "trip1", status: "updated" };
+      tripModel.findByIdAndUpdate.mockResolvedValue(updatedTrip);
+
+      const result = await operatorService.updateTrip("trip1", { status: "updated" });
+      expect(result).toEqual(updatedTrip);
+    });
+
+    it("should throw error if update fails", async () => {
+      tripModel.findByIdAndUpdate.mockResolvedValue(null);
+      await expect(operatorService.updateTrip("invalid", {})).rejects.toThrow("Trip not found or failed to update");
+    });
+  });
+
+  describe("deleteTrip", () => {
+    it("should delete a trip", async () => {
+      const deletedTrip = { id: "trip1" };
+      tripModel.findByIdAndDelete.mockResolvedValue(deletedTrip);
+
+      await expect(operatorService.deleteTrip("trip1")).resolves.toBeUndefined();
+    });
+
+    it("should throw error if deletion fails", async () => {
+      tripModel.findByIdAndDelete.mockResolvedValue(null);
+      await expect(operatorService.deleteTrip("bad")).rejects.toThrow("Trip not found or already deleted");
+    });
+  });
+
+  describe("cancelTrip", () => {
+    it("should cancel and return trip", async () => {
+      const canceledTrip = { id: "trip1", status: "canceled" };
+      tripModel.findByIdAndUpdate.mockResolvedValue(canceledTrip);
+
+      const result = await operatorService.cancelTrip("trip1");
+      expect(result.status).toBe("canceled");
+    });
+
+    it("should throw error if cancel fails", async () => {
+      tripModel.findByIdAndUpdate.mockResolvedValue(null);
+      await expect(operatorService.cancelTrip("bad")).rejects.toThrow("Trip not found or already canceled");
+    });
   });
 });

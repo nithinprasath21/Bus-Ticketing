@@ -1,64 +1,149 @@
+require("dotenv").config();
+
 const PassengerService = require("../services/passengerService");
-const PassengerRepository = require("../repositories/passengerRepository");
+const Booking = require("../models/bookingModel");
+const Trip = require("../models/tripModel");
+const Cancellation = require("../models/cancellationModel");
+const User = require("../models/userModel");
 
-jest.mock("../repositories/passengerRepository");
+jest.mock("../models/bookingModel");
+jest.mock("../models/tripModel");
+jest.mock("../models/cancellationModel");
+jest.mock("../models/userModel");
 
-describe("Passenger Service", () => {
-  const mockBus = { _id: "bus123", availableSeats: ["A1", "A2"], price: 100 };
-  const mockTrip = { _id: "trip123", busId: "bus123", availableSeats: ["A1", "A2"], status: "active", price: 100 };
-  const mockBooking = { 
-    _id: "booking123", 
-    userId: "user123", 
-    tripId: "trip123", 
-    selectedSeats: ["A1"], 
-    totalPrice: 100, 
-    status: "confirmed" 
-  };
+describe("PassengerService Unit Tests", () => {
+  let passengerService;
 
-  test("should search for available buses", async () => {
-    PassengerRepository.searchBuses.mockResolvedValue([mockTrip]);
-
-    const result = await PassengerService.searchBuses({ source: "A", destination: "B", date: "2025-04-01" });
-
-    expect(result).toEqual([mockTrip]);
-    expect(PassengerRepository.searchBuses).toHaveBeenCalledWith({ source: "A", destination: "B", date: "2025-04-01" });
+  beforeEach(() => {
+    passengerService = new PassengerService();
+    jest.clearAllMocks();
   });
 
-  test("should check seat availability", async () => {
-    PassengerRepository.getAvailableSeats.mockResolvedValue(mockBus.availableSeats);
+  describe("searchBuses", () => {
+    it("should return matching buses", async () => {
+      const trips = [{ source: "A", destination: "B" }];
+      Trip.find.mockResolvedValue(trips);
 
-    const result = await PassengerService.checkSeatAvailability("bus123");
-
-    expect(result).toEqual(["A1", "A2"]);
-    expect(PassengerRepository.getAvailableSeats).toHaveBeenCalledWith("bus123");
+      const result = await passengerService.searchBuses({ source: "A", destination: "B" });
+      expect(result).toEqual(trips);
+      expect(Trip.find).toHaveBeenCalledWith({ source: "A", destination: "B", status: "active" });
+    });
   });
 
-  test("should successfully book a ticket", async () => {
-    PassengerRepository.createBooking.mockResolvedValue(mockBooking);
+  describe("checkSeatAvailability", () => {
+    it("should return available seats", async () => {
+      const mockTrip = { availableSeats: ["1A", "1B"] };
+      Trip.findOne.mockReturnValue({
+        select: jest.fn().mockResolvedValue(mockTrip)
+      });
+  
+      const result = await passengerService.checkSeatAvailability("bus123");
+      expect(result).toEqual(mockTrip);
+      expect(Trip.findOne).toHaveBeenCalledWith({ busId: "bus123" });
+    });
+  
+    it("should throw error if trip not found", async () => {
+      Trip.findOne.mockReturnValue({
+        select: jest.fn().mockResolvedValue(null)
+      });
+  
+      await expect(
+        passengerService.checkSeatAvailability("badBus")
+      ).rejects.toThrow("Bus not found or no available seats");
+    });
+  });  
 
-    const result = await PassengerService.bookTicket("user123", { tripId: "trip123", selectedSeats: ["A1"] });
+  describe("bookTicket", () => {
+    it("should return booking on success", async () => {
+      const booking = { userId: "u1", tripId: "t1", selectedSeats: ["2A"] };
+      Booking.create.mockResolvedValue(booking);
 
-    expect(result).toEqual(mockBooking);
-    expect(PassengerRepository.createBooking).toHaveBeenCalledWith("user123", { tripId: "trip123", selectedSeats: ["A1"] });
+      const result = await passengerService.bookTicket("u1", { tripId: "t1", selectedSeats: ["2A"] });
+      expect(result).toEqual(booking);
+      expect(Booking.create).toHaveBeenCalledWith({ tripId: "t1", selectedSeats: ["2A"], userId: "u1" });
+    });
+
+    it("should throw error if booking fails", async () => {
+      Booking.create.mockResolvedValue(null);
+
+      await expect(passengerService.bookTicket("u1", {})).rejects.toThrow("Booking failed");
+    });
   });
 
-  test("should cancel a booking", async () => {
-    const canceledBooking = { ...mockBooking, status: "canceled" };
-    PassengerRepository.cancelBooking.mockResolvedValue(canceledBooking);
+  describe("getBookingHistory", () => {
+    it("should return list of bookings", async () => {
+      const bookings = [{ tripId: "t1" }];
+      Booking.find.mockReturnValue({ populate: jest.fn().mockResolvedValue(bookings) });
 
-    const result = await PassengerService.cancelBooking("user123", "booking123");
-
-    expect(result).toEqual(canceledBooking);
-    expect(PassengerRepository.cancelBooking).toHaveBeenCalledWith("user123", "booking123");
+      const result = await passengerService.getBookingHistory("u1");
+      expect(result).toEqual(bookings);
+      expect(Booking.find).toHaveBeenCalledWith({ userId: "u1" });
+    });
   });
 
-  test("should update user profile", async () => {
-    const updatedUser = { _id: "user123", name: "New Name", email: "new@example.com" };
-    PassengerRepository.updateUserProfile.mockResolvedValue(updatedUser);
+  describe("getBooking", () => {
+    it("should return specific booking if user matches", async () => {
+      const booking = { _id: "b1", userId: { toString: () => "u1" }, tripId: "t1" };
+      Booking.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(booking) });
 
-    const result = await PassengerService.updateProfile("user123", { name: "New Name", email: "new@example.com" });
+      const result = await passengerService.getBooking("u1", "b1");
+      expect(result._id).toBe("b1");
+    });
 
-    expect(result).toEqual(updatedUser);
-    expect(PassengerRepository.updateUserProfile).toHaveBeenCalledWith("user123", { name: "New Name", email: "new@example.com" });
+    it("should throw if booking not found", async () => {
+      Booking.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
+
+      await expect(passengerService.getBooking("u1", "not-found")).rejects.toThrow("Booking not found or unauthorized");
+    });
+
+    it("should throw if user does not match", async () => {
+      const booking = { userId: { toString: () => "someone-else" } };
+      Booking.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(booking) });
+
+      await expect(passengerService.getBooking("u1", "b1")).rejects.toThrow("Booking not found or unauthorized");
+    });
+  });
+
+  describe("cancelBooking", () => {
+    it("should cancel and return updated booking", async () => {
+      const booking = { _id: "b1", status: "canceled" };
+      Booking.findOneAndUpdate.mockResolvedValue(booking);
+      Cancellation.create.mockResolvedValue({});
+
+      const result = await passengerService.cancelBooking("u1", "b1", "no need");
+      expect(result.status).toBe("canceled");
+    });
+
+    it("should throw error if booking not found", async () => {
+      Booking.findOneAndUpdate.mockResolvedValue(null);
+
+      await expect(passengerService.cancelBooking("u1", "b1")).rejects.toThrow("Booking not found or already canceled");
+    });
+  });
+
+  describe("getProfile", () => {
+    it("should return user profile", async () => {
+      const user = { name: "Alice", email: "alice@example.com" };
+      User.findById.mockReturnValue({ select: jest.fn().mockResolvedValue(user) });
+
+      const result = await passengerService.getProfile("u1");
+      expect(result.name).toBe("Alice");
+    });
+  });
+
+  describe("updateProfile", () => {
+    it("should update and return profile", async () => {
+      const updated = { name: "Alice Updated", email: "alice@example.com" };
+      User.findByIdAndUpdate.mockReturnValue({ select: jest.fn().mockResolvedValue(updated) });
+
+      const result = await passengerService.updateProfile("u1", { name: "Alice Updated" });
+      expect(result.name).toBe("Alice Updated");
+    });
+
+    it("should throw error if update fails", async () => {
+      User.findByIdAndUpdate.mockReturnValue({ select: jest.fn().mockResolvedValue(null) });
+
+      await expect(passengerService.updateProfile("u1", {})).rejects.toThrow("Profile update failed");
+    });
   });
 });

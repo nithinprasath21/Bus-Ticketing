@@ -1,4 +1,4 @@
-import AdminService from '../services/adminService.js';
+const AdminService = require('../services/adminService.js');
 
 class AdminController {
     constructor() {
@@ -255,4 +255,4 @@ class AdminController {
     };
 }
 
-export default AdminController;
+module.exports = AdminController;
