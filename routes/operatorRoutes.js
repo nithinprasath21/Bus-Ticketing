@@ -1,6 +1,6 @@
-import express from 'express';
-import OperatorController from '../controllers/operatorController.js';
-import AuthMiddleware from '../middleware/authMiddleware.js';
+const express = require('express');
+const OperatorController = require('../controllers/operatorController.js');
+const AuthMiddleware = require('../middleware/authMiddleware.js');
 
 const router = express.Router();
 const operatorController = new OperatorController();
@@ -19,4 +19,4 @@ router.patch('/trips/:id', authMiddleware.protectOperator, operatorController.up
 router.delete('/trips/:id', authMiddleware.protectOperator, operatorController.deleteTrip);
 router.patch('/trips/:id/cancel', authMiddleware.protectOperator, operatorController.cancelTrip);
 
-export default router;
+module.exports = router;

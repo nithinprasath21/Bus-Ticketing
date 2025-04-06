@@ -5,7 +5,7 @@ class AuthController {
         this.authService = new AuthService();
     }
 
-    register = async (req, res) => {
+    register = async (req, res, next) => {
         try {
             const user = await this.authService.register(req.body);
             return res.status(201).json({
@@ -14,15 +14,11 @@ class AuthController {
                 data: user
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    login = async (req, res) => {
+    login = async (req, res, next) => {
         try {
             const { email, password } = req.body;
             const token = await this.authService.login(email, password);
@@ -32,15 +28,11 @@ class AuthController {
                 data: { token }
             });
         } catch (err) {
-            return res.status(401).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    logout = async (req, res) => {
+    logout = async (req, res, next) => {
         try {
             await this.authService.logout(req.user);
             return res.status(200).json({
@@ -49,15 +41,11 @@ class AuthController {
                 data: null
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    forgotPassword = async (req, res) => {
+    forgotPassword = async (req, res, next) => {
         try {
             await this.authService.forgotPassword(req.body.email);
             return res.status(200).json({
@@ -66,11 +54,7 @@ class AuthController {
                 data: null
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 }

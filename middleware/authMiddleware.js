@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import userModel from '../models/userModel.js';
+const jwt = require('jsonwebtoken');
+const userModel = require('../models/userModel.js');
 
 class AuthMiddleware {
     protectUser = async (req, res, next) => {
@@ -53,4 +53,4 @@ class AuthMiddleware {
     };
 }
 
-export default AuthMiddleware;
+module.exports = AuthMiddleware;

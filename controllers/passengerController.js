@@ -1,11 +1,11 @@
-import PassengerService from "../services/passengerService.js";
+const PassengerService = require("../services/passengerService.js");
 
 class PassengerController {
     constructor() {
         this.passengerService = new PassengerService();
     }
 
-    searchBuses = async (req, res) => {
+    searchBuses = async (req, res, next) => {
         try {
             const buses = await this.passengerService.searchBuses(req.query);
             return res.status(200).json({
@@ -14,15 +14,11 @@ class PassengerController {
                 data: buses
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    checkSeatAvailability = async (req, res) => {
+    checkSeatAvailability = async (req, res, next) => {
         try {
             const busId = req.params.id;
             const seats = await this.passengerService.checkSeatAvailability(busId);
@@ -32,15 +28,11 @@ class PassengerController {
                 data: seats
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    bookTicket = async (req, res) => {
+    bookTicket = async (req, res, next) => {
         try {
             const booking = await this.passengerService.bookTicket(req.user.id, req.body);
             return res.status(201).json({
@@ -49,15 +41,11 @@ class PassengerController {
                 data: booking
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    viewBookingHistory = async (req, res) => {
+    viewBookingHistory = async (req, res, next) => {
         try {
             const bookings = await this.passengerService.getBookingHistory(req.user.id);
             return res.status(200).json({
@@ -66,15 +54,11 @@ class PassengerController {
                 data: bookings
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    getBooking = async (req, res) => {
+    getBooking = async (req, res, next) => {
         try {
             const bookingId = req.params.id;
             const booking = await this.passengerService.getBooking(req.user.id, bookingId);
@@ -84,15 +68,11 @@ class PassengerController {
                 data: booking
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    cancelBooking = async (req, res) => {
+    cancelBooking = async (req, res, next) => {
         try {
             const bookingId = req.params.id;
             const booking = await this.passengerService.cancelBooking(req.user.id, bookingId);
@@ -102,15 +82,11 @@ class PassengerController {
                 data: booking
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    viewProfile = async (req, res) => {
+    viewProfile = async (req, res, next) => {
         try {
             const userId = req.params.id;
             const profile = await this.passengerService.getProfile(userId);
@@ -120,15 +96,11 @@ class PassengerController {
                 data: profile
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    updateProfile = async (req, res) => {
+    updateProfile = async (req, res, next) => {
         try {
             const userId = req.params.id;
             const updatedProfile = await this.passengerService.updateProfile(userId, req.body);
@@ -138,13 +110,9 @@ class PassengerController {
                 data: updatedProfile
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 }
 
-export default PassengerController;
+module.exports = PassengerController;

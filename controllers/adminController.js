@@ -5,7 +5,7 @@ class AdminController {
         this.adminService = new AdminService();
     }
 
-    getAllUsers = async (req, res) => {
+    getAllUsers = async (req, res, next) => {
         try {
             const users = await this.adminService.getAllUsers();
             return res.status(200).json({
@@ -14,15 +14,11 @@ class AdminController {
                 data: users
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    getUser = async (req, res) => {
+    getUser = async (req, res, next) => {
         try {
             const userId = req.params.id;
             const user = await this.adminService.getUser(userId);
@@ -32,15 +28,11 @@ class AdminController {
                 data: user
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    blockUser = async (req, res) => {
+    blockUser = async (req, res, next) => {
         try {
             const userId = req.params.id;
             const user = await this.adminService.blockUser(userId);
@@ -50,15 +42,11 @@ class AdminController {
                 data: user
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    unblockUser = async (req, res) => {
+    unblockUser = async (req, res, next) => {
         try {
             const userId = req.params.id;
             const user = await this.adminService.unblockUser(userId);
@@ -68,15 +56,11 @@ class AdminController {
                 data: user
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    getOperators = async (req, res) => {
+    getOperators = async (req, res, next) => {
         try {
             const operators = await this.adminService.getOperators();
             return res.status(200).json({
@@ -85,15 +69,11 @@ class AdminController {
                 data: operators
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    getOperator = async (req, res) => {
+    getOperator = async (req, res, next) => {
         try {
             const operatorId = req.params.id;
             const operator = await this.adminService.getOperator(operatorId);
@@ -103,15 +83,11 @@ class AdminController {
                 data: operator
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    blockUnblock = async (req, res) => {
+    blockUnblock = async (req, res, next) => {
         try {
             const userId = req.params.id;
             const user = await this.adminService.blockUnblock(userId);
@@ -121,15 +97,11 @@ class AdminController {
                 data: user
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    approveOperator = async (req, res) => {
+    approveOperator = async (req, res, next) => {
         try {
             const operatorId = req.params.id;
             const operator = await this.adminService.approveOperator(operatorId);
@@ -139,15 +111,11 @@ class AdminController {
                 data: operator
             });
         } catch (err) {
-            return res.status(500).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    getAllTrips = async (req, res) => {
+    getAllTrips = async (req, res, next) => {
         try {
             const trips = await this.adminService.getAllTrips();
             return res.status(200).json({
@@ -156,15 +124,11 @@ class AdminController {
                 data: trips
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    getTripDetails = async (req, res) => {
+    getTripDetails = async (req, res, next) => {
         try {
             const tripId = req.params.id;
             const trip = await this.adminService.getTripDetails(tripId);
@@ -174,15 +138,11 @@ class AdminController {
                 data: trip
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    updateTrip = async (req, res) => {
+    updateTrip = async (req, res, next) => {
         try {
             const tripId = req.params.id;
             const trip = await this.adminService.updateTrip(req.body, tripId);
@@ -192,15 +152,11 @@ class AdminController {
                 data: trip
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    cancelTrip = async (req, res) => {
+    cancelTrip = async (req, res, next) => {
         try {
             const tripId = req.params.id;
             const trip = await this.adminService.cancelTrip(tripId);
@@ -210,15 +166,11 @@ class AdminController {
                 data: trip
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    getPassengerBookings = async (req, res) => {
+    getPassengerBookings = async (req, res, next) => {
         try {
             const userId = req.params.id;
             const bookings = await this.adminService.getPassengerBookings(userId);
@@ -228,15 +180,11 @@ class AdminController {
                 data: bookings
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 
-    deletePassengerBooking = async (req, res) => {
+    deletePassengerBooking = async (req, res, next) => {
         try {
             const { id, bookingId } = req.params;
             const booking = await this.adminService.deletePassengerBooking(id, bookingId);
@@ -246,11 +194,7 @@ class AdminController {
                 data: booking
             });
         } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: err.message,
-                data: null
-            });
+            next(err);
         }
     };
 }

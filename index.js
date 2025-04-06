@@ -7,9 +7,8 @@ const errorMiddleware = require("./middleware/errorMiddleware");
 dotenv.config();
 
 const authRoutes = require("./routes/authRoutes");
-const busRoutes = require("./routes/busRoutes");
-const operatorRoutes = require("./routes/operatorRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const operatorRoutes = require("./routes/operatorRoutes");
 const passengerRoutes = require("./routes/passengerRoutes");
 
 const app = express();
@@ -19,10 +18,9 @@ app.use(cors());
 connectDB();
 
 app.use("/api/auth", authRoutes);
-app.use("/api/buses", busRoutes);
-app.use("/api/operators", operatorRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/passengers", passengerRoutes);
+app.use("/api/operator", operatorRoutes);
+app.use("/api/passenger", passengerRoutes);
 
 app.get("/", (req, res) => {
   res.send("Bus Ticketing API is Running...");
@@ -30,5 +28,5 @@ app.get("/", (req, res) => {
 
 app.use(errorMiddleware);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

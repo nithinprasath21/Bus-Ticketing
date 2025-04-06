@@ -1,6 +1,6 @@
-import express from 'express';
-import AdminController from '../controllers/adminController.js';
-import AuthMiddleware from '../middleware/authMiddleware.js';
+const express = require('express');
+const AdminController = require('../controllers/adminController.js');
+const AuthMiddleware = require('../middleware/authMiddleware.js');
 
 const router = express.Router();
 const adminController = new AdminController();
@@ -25,4 +25,4 @@ router.delete('/trips/:id', authMiddleware.protectAdmin, adminController.cancelT
 router.get('/users/:id/bookings', authMiddleware.protectAdmin, adminController.getPassengerBookings);
 router.delete('/users/:id/bookings/:bookingId', authMiddleware.protectAdmin, adminController.deletePassengerBooking);
 
-export default router;
+module.exports = router;

@@ -1,6 +1,6 @@
-import express from 'express';
-import PassengerController from '../controllers/passengerController.js';
-import AuthMiddleware from '../middleware/authMiddleware.js';
+const express = require('express');
+const PassengerController = require('../controllers/passengerController.js');
+const AuthMiddleware = require('../middleware/authMiddleware.js');
 
 const router = express.Router();
 const passengerController = new PassengerController();
@@ -18,4 +18,4 @@ router.delete('/bookings/:id', authMiddleware.protectUser, passengerController.c
 router.get('/profile/:id', authMiddleware.protectUser, passengerController.viewProfile);
 router.patch('/profile/:id', authMiddleware.protectUser, passengerController.updateProfile);
 
-export default router;
+module.exports = router;
