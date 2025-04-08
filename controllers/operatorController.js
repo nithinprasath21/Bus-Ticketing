@@ -87,7 +87,7 @@ class OperatorController {
 
     getMyTrips = async (req, res, next) => {
         try {
-            const trips = await this.operatorService.getMyTrips(req.operator.id);
+            const trips = await this.operatorService.getMyTrips(req.user.id);
             return res.status(200).json({
                 success: true,
                 message: "Trips fetched successfully",

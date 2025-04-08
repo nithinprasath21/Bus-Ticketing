@@ -3,10 +3,9 @@ const userModel = require('../models/userModel.js');
 
 class AuthMiddleware {
     protectUser = async (req, res, next) => {
-        const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies.AuthToken;
-        if (!token) return res.status(401).json({ error: 'Token not found' });
-
         try {
+            const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies.AuthToken;
+            if (!token) return res.status(401).json({ error: 'Token not found' });
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const user = await userModel.findById(decoded.id).select('-password');
             if (!user) return res.status(404).json({ error: 'User not found' });
@@ -19,10 +18,9 @@ class AuthMiddleware {
     };
 
     protectOperator = async (req, res, next) => {
-        const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies.AuthToken;
-        if (!token) return res.status(401).json({ message: 'Token not found' });
-
         try {
+            const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies.AuthToken;
+            if (!token) return res.status(401).json({ message: 'Token not found' });
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const user = await userModel.findById(decoded.id).select('-password');
             if (!user) return res.status(404).json({ message: 'User not found' });
@@ -36,10 +34,9 @@ class AuthMiddleware {
     };
 
     protectAdmin = async (req, res, next) => {
-        const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies.AuthToken;
-        if (!token) return res.status(401).json({ error: 'Token not found' });
-
         try {
+            const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies.AuthToken;
+            if (!token) return res.status(401).json({ error: 'Token not found' });
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const user = await userModel.findById(decoded.id).select('-password');
             if (!user) return res.status(404).json({ error: 'User not found' });
