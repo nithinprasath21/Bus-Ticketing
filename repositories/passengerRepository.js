@@ -9,7 +9,7 @@ class PassengerRepository {
     }
 
     async checkSeatAvailability(busId) {
-        return Trip.findOne({ busId }).select("availableSeats");
+        return Trip.findOne({ _id : busId }).select("availableSeats");
     }
 
     async createBooking(bookingData) {

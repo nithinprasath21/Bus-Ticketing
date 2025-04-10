@@ -48,7 +48,7 @@ class AdminRepository {
     }
 
     async findBookingsByPassenger(userId) {
-        return await bookingModel.find({ passenger: userId });
+        return await bookingModel.find({ userId: userId });
     }
 
     async findBookingById(bookingId) {

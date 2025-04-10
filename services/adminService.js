@@ -96,10 +96,10 @@ class AdminService {
         if (!trip) {
             throw new Error("Trip is not found");
         }
-        if (trip.status === "Cancelled") {
-            throw new Error("Trip is already cancelled");
+        if (trip.status === "canceled") {
+            throw new Error("Trip is already canceled");
         }
-        trip.status = "Cancelled";
+        trip.status = "canceled";
         return await this.adminRepository.saveTrip(trip);
     }
 
@@ -113,7 +113,7 @@ class AdminService {
         if (!booking) {
             throw new Error("Booking not found");
         }
-        if (booking.passenger.toString() !== userId) {
+        if (booking.userId.toString() !== userId) {
             throw new Error("Unauthorized to delete this booking");
         }
         return await this.adminRepository.deleteBooking(bookingId);
