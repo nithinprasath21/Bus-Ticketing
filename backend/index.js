@@ -3,6 +3,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./db");
 const errorMiddleware = require("./middleware/errorMiddleware");
+const rateLimit = require("express-rate-limit");
+const slowDown = require("express-slow-down");
 
 dotenv.config();
 
@@ -12,6 +14,22 @@ const operatorRoutes = require("./routes/operatorRoutes");
 const passengerRoutes = require("./routes/passengerRoutes");
 
 const app = express();
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const speedLimiter = slowDown({
+  windowMs: 15 * 60 * 1000,
+  delayAfter: 10,
+  delayMs: () => 500,
+});
+
+app.use(limiter);
+app.use(speedLimiter);
 app.use(express.json());
 app.use(cors());
 
