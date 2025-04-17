@@ -1,6 +1,7 @@
 require('dotenv').config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const AuthRepository = require("../repositories/authRepository");
 const AuthService = require("../services/authService");
 const userModel = require("../models/userModel");
 
@@ -108,6 +109,51 @@ describe("AuthService Unit Tests", () => {
       await expect(authService.forgotPassword("missing@example.com")).rejects.toThrow(
         "User not found"
       );
+    });
+  });
+});
+describe("AuthRepository", () => {
+  let authRepository;
+
+  beforeEach(() => {
+    authRepository = new AuthRepository();
+    jest.clearAllMocks();
+  });
+
+  describe("findUserById", () => {
+    it("should find a user by ID", async () => {
+      const mockUser = { _id: "user123", name: "John" };
+      userModel.findById.mockResolvedValue(mockUser);
+
+      const result = await authRepository.findUserById("user123");
+
+      expect(userModel.findById).toHaveBeenCalledWith("user123");
+      expect(result).toEqual(mockUser);
+    });
+  });
+
+  describe("updateUser", () => {
+    it("should update a user by ID", async () => {
+      const updateData = { name: "Updated" };
+      const updatedUser = { _id: "user123", ...updateData };
+
+      userModel.findByIdAndUpdate.mockResolvedValue(updatedUser);
+
+      const result = await authRepository.updateUser("user123", updateData);
+
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith("user123", updateData, { new: true });
+      expect(result).toEqual(updatedUser);
+    });
+  });
+
+  describe("saveUser", () => {
+    it("should save the user instance", async () => {
+      const mockUserInstance = { save: jest.fn().mockResolvedValue(true) };
+
+      const result = await authRepository.saveUser(mockUserInstance);
+
+      expect(mockUserInstance.save).toHaveBeenCalled();
+      expect(result).toBe(true);
     });
   });
 });
