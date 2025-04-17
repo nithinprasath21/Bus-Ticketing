@@ -39,7 +39,7 @@ describe("PassengerService Unit Tests", () => {
   
       const result = await passengerService.checkSeatAvailability("bus123");
       expect(result).toEqual(mockTrip);
-      expect(Trip.findOne).toHaveBeenCalledWith({ busId: "bus123" });
+      expect(Trip.findOne).toHaveBeenCalledWith({ _id: "bus123" });
     });
   
     it("should throw error if trip not found", async () => {

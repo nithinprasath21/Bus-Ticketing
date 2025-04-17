@@ -86,12 +86,12 @@ describe('AdminService Unit Tests (with mocked models)', () => {
 
   describe('cancelTrip', () => {
     it('should cancel a valid trip', async () => {
-      const trip = { id: 'trip1', status: 'active', save: jest.fn().mockResolvedValue({ status: 'Cancelled' }) };
+      const trip = { id: 'trip1', status: 'active', save: jest.fn().mockResolvedValue({ status: 'canceled' }) };
       tripModel.findById.mockResolvedValue(trip);
 
       const result = await adminService.cancelTrip('trip1');
-      expect(trip.status).toBe('Cancelled');
-      expect(result.status).toBe('Cancelled');
+      expect(trip.status).toBe('canceled');
+      expect(result.status).toBe('canceled');
     });
 
     it('should throw error if trip not found', async () => {
@@ -100,15 +100,15 @@ describe('AdminService Unit Tests (with mocked models)', () => {
     });
 
     it('should throw error if trip already cancelled', async () => {
-      const trip = { id: 'trip2', status: 'Cancelled' };
+      const trip = { id: 'trip2', status: 'canceled' };
       tripModel.findById.mockResolvedValue(trip);
-      await expect(adminService.cancelTrip('trip2')).rejects.toThrow('Trip is already cancelled');
+      await expect(adminService.cancelTrip('trip2')).rejects.toThrow('Trip is already canceled');
     });
   });
 
   describe('deletePassengerBooking', () => {
     it('should delete booking if valid passenger', async () => {
-      const booking = { id: 'b1', passenger: 'u1', toString: () => 'u1' };
+      const booking = { id: 'b1', userId: { toString: () => 'u1' } };
       bookingModel.findById.mockResolvedValue(booking);
       bookingModel.findByIdAndDelete.mockResolvedValue(true);
 
@@ -122,7 +122,7 @@ describe('AdminService Unit Tests (with mocked models)', () => {
     });
 
     it('should throw error if user unauthorized', async () => {
-      const booking = { id: 'b2', passenger: 'someoneElse', toString: () => 'someoneElse' };
+      const booking = { id: 'b2', userId: { toString: () => 'someoneElse'} };
       bookingModel.findById.mockResolvedValue(booking);
       await expect(adminService.deletePassengerBooking('u1', 'b2')).rejects.toThrow('Unauthorized to delete this booking');
     });
