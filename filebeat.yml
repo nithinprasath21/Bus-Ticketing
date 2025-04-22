@@ -1,0 +1,18 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /usr/share/backend-logs/app.log
+      - /usr/share/backend-logs/errors.log
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+logging:
+  to_files: true
+  level: info
+  files:
+    path: /usr/share/filebeat/logs
