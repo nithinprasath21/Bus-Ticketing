@@ -24,7 +24,7 @@ class AdminRepository {
     }
 
     async findAllTrips() {
-        return await tripModel.find();
+        return await tripModel.find({ status: { $nin: ["cancelled", "completed"] } });
     }
 
     async findTripById(tripId) {

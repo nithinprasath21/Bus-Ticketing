@@ -6,7 +6,7 @@ const bookingSchema = new mongoose.Schema(
     tripId: { type: mongoose.Schema.Types.ObjectId, ref: "Trip", required: true },
     selectedSeats: { type: [String], required: true },
     totalPrice: { type: Number, required: true },
-    status: { type: String, enum: ["confirmed", "canceled", "pending"], default: "confirmed" },
+    status: { type: String, enum: ["confirmed", "cancelled", "pending"], default: "confirmed" },
   },
   { timestamps: true }
 );

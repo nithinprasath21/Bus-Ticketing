@@ -1,4 +1,3 @@
-const Operator = require("../models/operatorModel");
 const Bus = require("../models/busModel");
 const Trip = require("../models/tripModel");
 
@@ -22,6 +21,10 @@ class OperatorRepository {
     async deleteBus(busId) {
         return Bus.findByIdAndDelete(busId);
     }
+    
+    async cancelTripsByBusId(busId) {
+        return Trip.updateMany({ busId }, { status: "cancelled" });
+    }
 
     async createTrip(tripData) {
         return Trip.create(tripData);
@@ -44,7 +47,7 @@ class OperatorRepository {
     }
 
     async cancelTrip(tripId) {
-        return Trip.findByIdAndUpdate(tripId, { status: "canceled" }, { new: true });
+        return Trip.findByIdAndUpdate(tripId, { status: "cancelled" }, { new: true });
     }
 }
 

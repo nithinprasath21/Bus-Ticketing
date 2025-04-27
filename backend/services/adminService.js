@@ -47,15 +47,6 @@ class AdminService {
         return operator;
     }
 
-    async blockUnblock(userId) {
-        const user = await this.adminRepository.findUserById(userId);
-        if (!user) {
-            throw new Error("User is not found");
-        }
-        user.isBlocked = !user.isBlocked;
-        return await this.adminRepository.saveUser(user);
-    }
-
     async approveOperator(operatorId) {
         const operator = await this.adminRepository.findOperatorById(operatorId);
         if (!operator || operator.role !== "operator") {
@@ -96,10 +87,10 @@ class AdminService {
         if (!trip) {
             throw new Error("Trip is not found");
         }
-        if (trip.status === "canceled") {
-            throw new Error("Trip is already canceled");
+        if (trip.status === "cancelled") {
+            throw new Error("Trip is already cancelled");
         }
-        trip.status = "canceled";
+        trip.status = "cancelled";
         return await this.adminRepository.saveTrip(trip);
     }
 

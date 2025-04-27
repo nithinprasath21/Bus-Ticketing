@@ -36,37 +36,69 @@ describe("PassengerService Unit Tests", () => {
       Trip.findOne.mockReturnValue({
         select: jest.fn().mockResolvedValue(mockTrip)
       });
-  
+
       const result = await passengerService.checkSeatAvailability("bus123");
-      expect(result).toEqual(mockTrip);
+      expect(result).toEqual(["1A", "1B"]);
       expect(Trip.findOne).toHaveBeenCalledWith({ _id: "bus123" });
     });
-  
+
     it("should throw error if trip not found", async () => {
       Trip.findOne.mockReturnValue({
         select: jest.fn().mockResolvedValue(null)
       });
-  
+
       await expect(
         passengerService.checkSeatAvailability("badBus")
       ).rejects.toThrow("Bus not found or no available seats");
     });
-  });  
+  });
 
   describe("bookTicket", () => {
     it("should return booking on success", async () => {
+      const tripData = {
+        _id: "t1",
+        availableSeats: ["2A", "2B"],
+        price: 500,
+        save: jest.fn().mockResolvedValue(true),
+      };
+      Trip.findOne.mockResolvedValue(tripData);
       const booking = { userId: "u1", tripId: "t1", selectedSeats: ["2A"] };
       Booking.create.mockResolvedValue(booking);
 
       const result = await passengerService.bookTicket("u1", { tripId: "t1", selectedSeats: ["2A"] });
       expect(result).toEqual(booking);
-      expect(Booking.create).toHaveBeenCalledWith({ tripId: "t1", selectedSeats: ["2A"], userId: "u1" });
+      expect(Booking.create).toHaveBeenCalledWith({
+        userId: "u1",
+        tripId: "t1",
+        selectedSeats: ["2A"],
+        totalPrice: 500,
+        status: "confirmed",
+      });
+      expect(tripData.save).toHaveBeenCalled();
     });
-
+  
     it("should throw error if booking fails", async () => {
+      const tripData = {
+        _id: "t1",
+        availableSeats: ["2A", "2B"],
+        price: 500,
+        save: jest.fn().mockResolvedValue(true),
+      };
+  
+      Trip.findOne.mockResolvedValue(tripData);
       Booking.create.mockResolvedValue(null);
-
-      await expect(passengerService.bookTicket("u1", {})).rejects.toThrow("Booking failed");
+  
+      await expect(
+        passengerService.bookTicket("u1", { tripId: "t1", selectedSeats: ["2A"] })
+      ).rejects.toThrow("Booking failed");
+    });
+  
+    it("should throw error if trip not found", async () => {
+      Trip.findOne.mockResolvedValue(null);
+  
+      await expect(
+        passengerService.bookTicket("u1", { tripId: "badTrip", selectedSeats: ["2A"] })
+      ).rejects.toThrow("Trip not found");
     });
   });
 

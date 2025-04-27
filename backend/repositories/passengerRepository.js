@@ -27,12 +27,17 @@ class PassengerRepository {
     async cancelBooking(bookingId, userId, reason) {
         const booking = await Booking.findOneAndUpdate(
             { _id: bookingId, userId },
-            { status: "canceled" },
+            { status: "cancelled" },
             { new: true }
         );
         if (booking) {
             await Cancellation.create({ bookingId, userId, reason });
         }
+        return booking;
+    }
+    
+    async deleteBooking(bookingId, userId) {
+        const booking = await Booking.findOneAndDelete({ _id: bookingId, userId });
         return booking;
     }
 

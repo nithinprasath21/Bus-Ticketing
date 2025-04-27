@@ -1,4 +1,5 @@
 const PassengerRepository = require("../repositories/passengerRepository");
+const Trip = require("../models/tripModel");
 
 class PassengerService {
     constructor() {
@@ -12,12 +13,35 @@ class PassengerService {
     async checkSeatAvailability(busId) {
         const seats = await this.passengerRepository.checkSeatAvailability(busId);
         if (!seats) throw new Error("Bus not found or no available seats");
-        return seats;
+        return seats.availableSeats;
     }
 
     async bookTicket(userId, bookingData) {
-        const booking = await this.passengerRepository.createBooking({ ...bookingData, userId });
-        if (!booking) throw new Error("Booking failed");
+        const { tripId, selectedSeats } = bookingData;
+        const trip = await Trip.findOne({ _id: tripId });
+        if (!trip) {
+            throw new Error("Trip not found");
+        }
+        const availableSeatsSet = new Set(trip.availableSeats);
+        for (const seat of selectedSeats) {
+            if (!availableSeatsSet.has(seat)) {
+                throw new Error(`Seat ${seat} is not available`);
+            }
+        }
+        const totalPrice = trip.price * selectedSeats.length;
+        const bookingPayload = {
+            userId,
+            tripId,
+            selectedSeats,
+            totalPrice,
+            status: "confirmed",
+        };
+        const booking = await this.passengerRepository.createBooking(bookingPayload);
+        if (!booking) {
+            throw new Error("Booking failed");
+        }
+        trip.availableSeats = trip.availableSeats.filter(seat => !selectedSeats.includes(seat));
+        await trip.save();
         return booking;
     }
 
@@ -34,6 +58,12 @@ class PassengerService {
     async cancelBooking(userId, bookingId, reason = "User canceled") {
         const booking = await this.passengerRepository.cancelBooking(bookingId, userId, reason);
         if (!booking) throw new Error("Booking not found or already canceled");
+        return booking;
+    }
+    
+    async deleteBooking(userId, bookingId) {
+        const booking = await this.passengerRepository.deleteBooking(bookingId, userId);
+        if (!booking) throw new Error("Booking not found or already deleted");
         return booking;
     }
 

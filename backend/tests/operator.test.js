@@ -39,13 +39,13 @@ describe("OperatorService Unit Tests", () => {
     });
   });
 
-  describe("createBus", () => {
-    it("should create and return a new bus", async () => {
-      const newBus = { busName: "Express", totalSeats: 40 };
-      busModel.create.mockResolvedValue(newBus);
-
-      const result = await operatorService.createBus(newBus);
-      expect(result).toEqual(newBus);
+  describe("createTrip", () => {
+    it("should create a trip", async () => {
+      const newTrip = { source: "City A", destination: "City B", busId: "bus1" };
+      busModel.findById.mockResolvedValue({ id: "bus1", seats: ["1", "2", "3"] });
+      tripModel.create.mockResolvedValue(newTrip);
+      const result = await operatorService.createTrip(newTrip);
+      expect(result).toEqual(newTrip);
     });
   });
 

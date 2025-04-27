@@ -72,31 +72,6 @@ describe('AdminService Unit Tests (with mocked models)', () => {
     });
   });
 
-  describe('blockUnblock', () => {
-    it('should block if user is not blocked', async () => {
-      const mockUser = { isBlocked: false, save: jest.fn().mockResolvedValue({ isBlocked: true }) };
-      userModel.findById.mockResolvedValue(mockUser);
-
-      const result = await adminService.blockUnblock('u1');
-      expect(mockUser.isBlocked).toBe(true);
-      expect(result).toEqual({ isBlocked: true });
-    });
-
-    it('should unblock if user is already blocked', async () => {
-      const mockUser = { isBlocked: true, save: jest.fn().mockResolvedValue({ isBlocked: false }) };
-      userModel.findById.mockResolvedValue(mockUser);
-
-      const result = await adminService.blockUnblock('u1');
-      expect(mockUser.isBlocked).toBe(false);
-      expect(result).toEqual({ isBlocked: false });
-    });
-
-    it('should throw error if user not found', async () => {
-      userModel.findById.mockResolvedValue(null);
-      await expect(adminService.blockUnblock('u1')).rejects.toThrow('User is not found');
-    });
-  });
-
   describe('getAllTrips', () => {
     it('should return all trips', async () => {
       const trips = [{ id: 't1' }];
@@ -243,12 +218,12 @@ describe('AdminService Unit Tests (with mocked models)', () => {
 
   describe('cancelTrip', () => {
     it('should cancel a valid trip', async () => {
-      const trip = { id: 'trip1', status: 'active', save: jest.fn().mockResolvedValue({ status: 'canceled' }) };
+      const trip = { id: 'trip1', status: 'active', save: jest.fn().mockResolvedValue({ status: 'cancelled' }) };
       tripModel.findById.mockResolvedValue(trip);
 
       const result = await adminService.cancelTrip('trip1');
-      expect(trip.status).toBe('canceled');
-      expect(result.status).toBe('canceled');
+      expect(trip.status).toBe('cancelled');
+      expect(result.status).toBe('cancelled');
     });
 
     it('should throw error if trip not found', async () => {
@@ -257,9 +232,9 @@ describe('AdminService Unit Tests (with mocked models)', () => {
     });
 
     it('should throw error if trip already cancelled', async () => {
-      const trip = { id: 'trip2', status: 'canceled' };
+      const trip = { id: 'trip2', status: 'cancelled' };
       tripModel.findById.mockResolvedValue(trip);
-      await expect(adminService.cancelTrip('trip2')).rejects.toThrow('Trip is already canceled');
+      await expect(adminService.cancelTrip('trip2')).rejects.toThrow('Trip is already cancelled');
     });
   });
 

@@ -86,9 +86,23 @@ class PassengerController {
         }
     };
 
+    deleteBooking = async (req, res, next) => {
+        try {
+            const bookingId = req.params.id;
+            const booking = await this.passengerService.deleteBooking(req.user.id, bookingId);
+            return res.status(200).json({
+                success: true,
+                message: "Booking deleted successfully",
+                data: booking
+            });
+        } catch (err) {
+            next(err);
+        }
+    };
+
     viewProfile = async (req, res, next) => {
         try {
-            const userId = req.params.id;
+            const userId = req.user.id;
             const profile = await this.passengerService.getProfile(userId);
             return res.status(200).json({
                 success: true,
@@ -102,7 +116,7 @@ class PassengerController {
 
     updateProfile = async (req, res, next) => {
         try {
-            const userId = req.params.id;
+            const userId = req.user.id;
             const updatedProfile = await this.passengerService.updateProfile(userId, req.body);
             return res.status(200).json({
                 success: true,

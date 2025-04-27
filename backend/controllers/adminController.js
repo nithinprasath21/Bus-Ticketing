@@ -186,8 +186,8 @@ class AdminController {
 
     deletePassengerBooking = async (req, res, next) => {
         try {
-            const { id, bookingId } = req.params;
-            const booking = await this.adminService.deletePassengerBooking(id, bookingId);
+            const { id: userId, bookingId } = req.params;
+            const booking = await this.adminService.deletePassengerBooking(userId, bookingId);
             return res.status(200).json({
                 success: true,
                 message: "Passenger booking deleted successfully",

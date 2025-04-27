@@ -16,6 +16,13 @@ class OperatorService {
     }
 
     async createBus(busData) {
+        if (!busData.seats || busData.seats.length === 0) {
+            const seats = [];
+            for (let i = 1; i <= busData.totalSeats; i++) {
+                seats.push(i.toString());
+            }
+            busData.seats = seats;
+        }
         return this.operatorRepository.createBus(busData);
     }
 
@@ -26,16 +33,25 @@ class OperatorService {
     }
 
     async deleteBus(busId) {
-        const deletedBus = await this.operatorRepository.deleteBus(busId);
-        if (!deletedBus) throw new Error("Bus not found or already deleted");
+        const bus = await this.operatorRepository.deleteBus(busId);
+        if (!bus) throw new Error("Bus not found or already deleted");
+    
+        await this.operatorRepository.cancelTripsByBusId(busId);
     }
 
     async createTrip(tripData) {
+        if (!tripData.availableSeats || tripData.availableSeats.length === 0) {
+            const bus = await this.operatorRepository.getBusById(tripData.busId);
+            if (!bus) throw new Error("Bus not found for trip creation");
+            tripData.availableSeats = bus.seats;
+        }
         return this.operatorRepository.createTrip(tripData);
     }
 
     async getMyTrips(operatorId) {
-        return this.operatorRepository.getTripsByOperator(operatorId);
+        const trips = await this.operatorRepository.getTripsByOperator(operatorId);
+        const activeTrips = trips.filter(trip => trip.status !== "completed" && trip.status !== "cancelled");
+        return activeTrips;
     }
 
     async getTrip(tripId) {
