@@ -21,11 +21,15 @@ class AuthController {
     login = async (req, res, next) => {
         try {
             const { email, password } = req.body;
-            const token = await this.authService.login(email, password);
+            const { token, role } = await this.authService.login(email, password);
             return res.status(200).json({
                 success: true,
                 message: "User logged in successfully",
-                data: { token }
+                data: {
+                    token,
+                    email,
+                    role
+                }
             });
         } catch (err) {
             next(err);
@@ -47,10 +51,11 @@ class AuthController {
 
     forgotPassword = async (req, res, next) => {
         try {
-            await this.authService.forgotPassword(req.body.email);
+            const { email, password } = req.body;
+            await this.authService.updateForgottenPassword(email, password);
             return res.status(200).json({
                 success: true,
-                message: "Password reset link sent to email",
+                message: "Password updated successfully",
                 data: null
             });
         } catch (err) {

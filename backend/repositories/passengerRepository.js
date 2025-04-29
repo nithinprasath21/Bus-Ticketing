@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 
 class PassengerRepository {
     async searchBuses(query) {
-        return Trip.find({ source: query.source, destination: query.destination, status: "active" });
+        return Trip.find(query).populate("busId");
     }
 
     async checkSeatAvailability(busId) {

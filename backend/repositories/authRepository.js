@@ -9,8 +9,8 @@ class AuthRepository {
         return User.findOne({ email });
     }
 
-    async findUserById(userId) {
-        return User.findById(userId);
+    async updateUserPasswordByEmail(email, hashedPassword) {
+        return User.updateOne({ email }, { $set: { password: hashedPassword } });
     }
 
     async updateUser(userId, updateData) {

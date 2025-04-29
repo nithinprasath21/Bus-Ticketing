@@ -51,18 +51,18 @@ describe("AuthService Unit Tests", () => {
     it("should return JWT token on valid credentials", async () => {
       const mockUser = {
         _id: "user123",
+        email: "test@example.com",
         role: "passenger",
         password: await bcrypt.hash("password123", 10),
       };
-
       userModel.findOne.mockResolvedValue(mockUser);
-
-      const token = await authService.login("test@example.com", "password123");
-
-      expect(typeof token).toBe("string");
-      const decoded = jwt.decode(token);
+      const result = await authService.login("test@example.com", "password123");
+      expect(typeof result.token).toBe("string");
+      const decoded = jwt.decode(result.token);
       expect(decoded.id).toBe("user123");
       expect(decoded.role).toBe("passenger");
+      expect(result.email).toBe("test@example.com");
+      expect(result.role).toBe("passenger");
     });
 
     it("should throw error if user not found", async () => {
@@ -95,23 +95,30 @@ describe("AuthService Unit Tests", () => {
     });
   });
 
-  describe("forgotPassword", () => {
+  describe("updateForgottenPassword", () => {
     it("should return true if user exists", async () => {
-      userModel.findOne.mockResolvedValue({ email: "test@example.com" });
-
-      const result = await authService.forgotPassword("test@example.com");
+      const email = "test@example.com";
+      const password = "newPassword123";
+      const hashed = await bcrypt.hash(password, 10);
+      userModel.findOne.mockResolvedValue({ email });
+      userModel.updateOne.mockResolvedValue({ acknowledged: true });
+      const result = await authService.updateForgottenPassword(email, password);
       expect(result).toBe(true);
+      expect(userModel.findOne).toHaveBeenCalledWith({ email });
+      expect(userModel.updateOne).toHaveBeenCalledWith(
+        { email },
+        expect.objectContaining({ $set: { password: expect.any(String) } })
+      );
     });
-
     it("should throw error if user not found", async () => {
       userModel.findOne.mockResolvedValue(null);
-
-      await expect(authService.forgotPassword("missing@example.com")).rejects.toThrow(
-        "User not found"
-      );
+      await expect(authService.updateForgottenPassword("missing@example.com", "any"))
+        .rejects
+        .toThrow("Email does not exist");
     });
   });
 });
+
 describe("AuthRepository", () => {
   let authRepository;
 
@@ -120,14 +127,12 @@ describe("AuthRepository", () => {
     jest.clearAllMocks();
   });
 
-  describe("findUserById", () => {
-    it("should find a user by ID", async () => {
-      const mockUser = { _id: "user123", name: "John" };
-      userModel.findById.mockResolvedValue(mockUser);
-
-      const result = await authRepository.findUserById("user123");
-
-      expect(userModel.findById).toHaveBeenCalledWith("user123");
+  describe("findUserByEmail", () => {
+    it("should find a user by email", async () => {
+      const mockUser = { _id: "user123", email: "john@example.com", name: "John" };
+      userModel.findOne.mockResolvedValue(mockUser);
+      const result = await authRepository.findUserByEmail("john@example.com");
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: "john@example.com" });
       expect(result).toEqual(mockUser);
     });
   });

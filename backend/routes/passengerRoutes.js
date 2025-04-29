@@ -6,8 +6,8 @@ const router = express.Router();
 const passengerController = new PassengerController();
 const authMiddleware = new AuthMiddleware();
 
-router.get('/buses/search', passengerController.searchBuses);
-router.get('/buses/:id/seats', passengerController.checkSeatAvailability);
+router.get('/buses/search', authMiddleware.protectUser, passengerController.searchBuses);
+router.get('/buses/:id/seats', authMiddleware.protectUser, passengerController.checkSeatAvailability);
 
 router.post('/bookings', authMiddleware.protectUser, passengerController.bookTicket);
 router.get('/bookings', authMiddleware.protectUser, passengerController.viewBookingHistory);

@@ -21,9 +21,17 @@ describe("PassengerService Unit Tests", () => {
 
   describe("searchBuses", () => {
     it("should return matching buses", async () => {
-      const trips = [{ source: "A", destination: "B" }];
-      Trip.find.mockResolvedValue(trips);
-
+      const trips = [
+        {
+          source: "A",
+          destination: "B",
+          busId: { busType: { acType: "AC", seatType: "Sleeper" } },
+        },
+      ];
+      const mockQuery = {
+        populate: jest.fn().mockResolvedValue(trips),
+      };
+      Trip.find.mockReturnValueOnce(mockQuery);
       const result = await passengerService.searchBuses({ source: "A", destination: "B" });
       expect(result).toEqual(trips);
       expect(Trip.find).toHaveBeenCalledWith({ source: "A", destination: "B", status: "active" });

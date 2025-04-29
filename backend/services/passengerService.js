@@ -7,7 +7,32 @@ class PassengerService {
     }
 
     async searchBuses(query) {
-        return this.passengerRepository.searchBuses(query);
+        const { source, destination, date, acType, seatType } = query;
+        if (!source || !destination) {
+            throw new Error("Source and destination are required");
+        }
+        const searchQuery = {
+            source,
+            destination,
+            status: "active",
+        };
+        if (date) {
+            const from = new Date(date);
+            const to = new Date(from);
+            to.setDate(from.getDate() + 1);
+            searchQuery.departureTime = { $gte: from, $lt: to };
+        }
+        const trips = await this.passengerRepository.searchBuses(searchQuery);    
+        const filteredTrips = trips.filter(trip => {
+            const bus = trip.busId;
+            if (!bus || !bus.busType) return false;
+            let match = true;
+            if (acType) match = match && bus.busType.acType === acType;
+            if (seatType) match = match && bus.busType.seatType === seatType;
+    
+            return match;
+        });
+        return filteredTrips;
     }
 
     async checkSeatAvailability(busId) {

@@ -6,7 +6,9 @@ const errorMiddleware = require("./middleware/errorMiddleware");
 const rateLimit = require("express-rate-limit");
 const slowDown = require("express-slow-down");
 
-dotenv.config();
+dotenv.config({
+  path: process.env.NODE_ENV === "test" ? ".env.test" : ".env",
+});
 
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
@@ -15,23 +17,28 @@ const passengerRoutes = require("./routes/passengerRoutes");
 
 const app = express();
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+if (process.env.NODE_ENV !== "test") {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  const speedLimiter = slowDown({
+    windowMs: 15 * 60 * 1000,
+    delayAfter: 10,
+    delayMs: () => 500,
+  });
+  app.use(limiter);
+  app.use(speedLimiter);
+}
 
-const speedLimiter = slowDown({
-  windowMs: 15 * 60 * 1000,
-  delayAfter: 10,
-  delayMs: () => 500,
-});
-
-app.use(limiter);
-app.use(speedLimiter);
 app.use(express.json());
-app.use(cors());
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
 
 connectDB();
 
