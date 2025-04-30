@@ -7,7 +7,7 @@ class PassengerController {
 
     searchBuses = async (req, res, next) => {
         try {
-            const buses = await this.passengerService.searchBuses(req.body);
+            const buses = await this.passengerService.searchBuses(req.query);
             return res.status(200).json({
                 success: true,
                 message: "Buses found successfully",
