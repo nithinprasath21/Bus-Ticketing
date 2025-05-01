@@ -16,6 +16,26 @@ class PassengerRepository {
         return Booking.create(bookingData);
     }
 
+    async reserveSeatsIfAvailable(tripId, selectedSeats) {
+        return Trip.findOneAndUpdate(
+            {
+                _id: tripId,
+                availableSeats: { $all: selectedSeats }
+            },
+            {
+                $pull: { availableSeats: { $in: selectedSeats } }
+            },
+            { new: true }
+        );
+    }
+
+    async restoreSeats(tripId, selectedSeats) {
+        return Trip.updateOne(
+            { _id: tripId },
+            { $push: { availableSeats: { $each: selectedSeats } } }
+        );
+    }
+
     async getBookingHistory(userId) {
         return Booking.find({ userId }).populate("tripId");
     }
