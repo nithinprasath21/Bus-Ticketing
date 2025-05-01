@@ -65,48 +65,61 @@ describe("PassengerService Unit Tests", () => {
     it("should return booking on success", async () => {
       const tripData = {
         _id: "t1",
-        availableSeats: ["2A", "2B"],
         price: 500,
-        save: jest.fn().mockResolvedValue(true),
+        availableSeats: ["2A", "2B"]
       };
-      Trip.findOne.mockResolvedValue(tripData);
-      const booking = { userId: "u1", tripId: "t1", selectedSeats: ["2A"] };
+
+      Trip.findOneAndUpdate.mockResolvedValue(tripData);
+
+      const booking = {
+        userId: "u1",
+        tripId: "t1",
+        selectedSeats: ["2A"],
+        totalPrice: 500,
+        status: "confirmed"
+      };
+
       Booking.create.mockResolvedValue(booking);
 
-      const result = await passengerService.bookTicket("u1", { tripId: "t1", selectedSeats: ["2A"] });
+      const result = await passengerService.bookTicket("u1", {
+        tripId: "t1",
+        selectedSeats: ["2A"]
+      });
       expect(result).toEqual(booking);
       expect(Booking.create).toHaveBeenCalledWith({
         userId: "u1",
         tripId: "t1",
         selectedSeats: ["2A"],
         totalPrice: 500,
-        status: "confirmed",
+        status: "confirmed"
       });
-      expect(tripData.save).toHaveBeenCalled();
     });
   
     it("should throw error if booking fails", async () => {
       const tripData = {
         _id: "t1",
-        availableSeats: ["2A", "2B"],
         price: 500,
-        save: jest.fn().mockResolvedValue(true),
+        availableSeats: ["2A", "2B"]
       };
-  
-      Trip.findOne.mockResolvedValue(tripData);
+      Trip.findOneAndUpdate.mockResolvedValue(tripData);
       Booking.create.mockResolvedValue(null);
-  
+
       await expect(
-        passengerService.bookTicket("u1", { tripId: "t1", selectedSeats: ["2A"] })
+        passengerService.bookTicket("u1", {
+          tripId: "t1",
+          selectedSeats: ["2A"]
+        })
       ).rejects.toThrow("Booking failed");
     });
   
     it("should throw error if trip not found", async () => {
-      Trip.findOne.mockResolvedValue(null);
-  
+      Trip.findOneAndUpdate.mockResolvedValue(null);
       await expect(
-        passengerService.bookTicket("u1", { tripId: "badTrip", selectedSeats: ["2A"] })
-      ).rejects.toThrow("Trip not found");
+        passengerService.bookTicket("u1", {
+          tripId: "badTrip",
+          selectedSeats: ["2A"]
+        })
+      ).rejects.toThrow("Some or all selected seats are already booked.");
     });
   });
 

@@ -1,5 +1,4 @@
 const PassengerRepository = require("../repositories/passengerRepository");
-const Trip = require("../models/tripModel");
 
 class PassengerService {
     constructor() {
@@ -43,15 +42,9 @@ class PassengerService {
 
     async bookTicket(userId, bookingData) {
         const { tripId, selectedSeats } = bookingData;
-        const trip = await Trip.findOne({ _id: tripId });
+        const trip = await this.passengerRepository.reserveSeatsIfAvailable(tripId, selectedSeats);
         if (!trip) {
-            throw new Error("Trip not found");
-        }
-        const availableSeatsSet = new Set(trip.availableSeats);
-        for (const seat of selectedSeats) {
-            if (!availableSeatsSet.has(seat)) {
-                throw new Error(`Seat ${seat} is not available`);
-            }
+            throw new Error("Some or all selected seats are already booked.");
         }
         const totalPrice = trip.price * selectedSeats.length;
         const bookingPayload = {
@@ -59,14 +52,13 @@ class PassengerService {
             tripId,
             selectedSeats,
             totalPrice,
-            status: "confirmed",
+            status: "confirmed"
         };
         const booking = await this.passengerRepository.createBooking(bookingPayload);
         if (!booking) {
-            throw new Error("Booking failed");
+            await this.passengerRepository.restoreSeats(tripId, selectedSeats);
+            throw new Error("Booking failed. Please try again.");
         }
-        trip.availableSeats = trip.availableSeats.filter(seat => !selectedSeats.includes(seat));
-        await trip.save();
         return booking;
     }
 
