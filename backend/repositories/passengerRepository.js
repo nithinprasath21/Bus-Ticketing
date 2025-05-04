@@ -16,23 +16,23 @@ class PassengerRepository {
         return Booking.create(bookingData);
     }
 
-    async reserveSeatsIfAvailable(tripId, selectedSeats) {
+    async reserveSeatsIfAvailable(tripId, seatNumbers) {
         return Trip.findOneAndUpdate(
             {
                 _id: tripId,
-                availableSeats: { $all: selectedSeats }
+                availableSeats: { $all: seatNumbers }
             },
             {
-                $pull: { availableSeats: { $in: selectedSeats } }
+                $pull: { availableSeats: { $in: seatNumbers } }
             },
             { new: true }
         );
     }
 
-    async restoreSeats(tripId, selectedSeats) {
+    async restoreSeats(tripId, seatNumbers) {
         return Trip.updateOne(
             { _id: tripId },
-            { $push: { availableSeats: { $each: selectedSeats } } }
+            { $push: { availableSeats: { $each: seatNumbers } } }
         );
     }
 
@@ -45,20 +45,55 @@ class PassengerRepository {
     }
 
     async cancelBooking(bookingId, userId, reason) {
-        const booking = await Booking.findOneAndUpdate(
-            { _id: bookingId, userId },
-            { status: "cancelled" },
-            { new: true }
-        );
-        if (booking) {
-            await Cancellation.create({ bookingId, userId, reason });
-        }
+        const booking = await Booking.findOne({ _id: bookingId, userId });
+        if (!booking || booking.status === 'cancelled') return null;    
+        const now = new Date();
+        booking.selectedSeats = booking.selectedSeats.map(seat => ({
+            ...seat,
+            status: 'cancelled',
+            cancelledAt: now
+        }));
+        booking.status = 'cancelled';
+        await booking.save();
+    
+        await Cancellation.create({ bookingId, userId, reason });
         return booking;
     }
+
+    async findBookingByIdAndUser(bookingId, userId) {
+        return await Booking.findOne({ _id: bookingId, userId });
+    }
     
-    async deleteBooking(bookingId, userId) {
-        const booking = await Booking.findOneAndDelete({ _id: bookingId, userId });
-        return booking;
+    async updateBookingSeats(bookingId, updatedSeats) {
+        return await Booking.findByIdAndUpdate(
+            bookingId,
+            { selectedSeats: updatedSeats },
+            { new: true }
+        );
+    }
+
+    async getTripById(tripId) {
+        return Trip.findById(tripId);
+    }
+    
+    async updateBookingPartial(bookingId, updatePayload) {
+        return Booking.findByIdAndUpdate(bookingId, updatePayload, { new: true });
+    }
+    
+    async addSeatsBackToTrip(tripId, seatNumbers) {
+        const trip = await Trip.findById(tripId);
+        if (!trip) return null;
+    
+        trip.availableSeats = [...new Set([...trip.availableSeats, ...seatNumbers])];
+        return await trip.save();
+    }
+    
+    async createCancellationEntry(bookingId, userId, reason) {
+        return await Cancellation.create({
+            bookingId,
+            userId,
+            reason
+        });
     }
 
     async getUserProfile(userId) {

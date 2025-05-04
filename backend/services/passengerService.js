@@ -42,21 +42,26 @@ class PassengerService {
 
     async bookTicket(userId, bookingData) {
         const { tripId, selectedSeats } = bookingData;
-        const trip = await this.passengerRepository.reserveSeatsIfAvailable(tripId, selectedSeats);
+        const seatNumbers = selectedSeats.map(seat => seat.seatNumber);
+        const trip = await this.passengerRepository.reserveSeatsIfAvailable(tripId, seatNumbers);
         if (!trip) {
             throw new Error("Some or all selected seats are already booked.");
         }
         const totalPrice = trip.price * selectedSeats.length;
+        const formattedSeats = selectedSeats.map(seat => ({
+            seatNumber: seat.seatNumber,
+            status: 'booked'
+        }));
         const bookingPayload = {
             userId,
             tripId,
-            selectedSeats,
+            selectedSeats: formattedSeats,
             totalPrice,
             status: "confirmed"
         };
         const booking = await this.passengerRepository.createBooking(bookingPayload);
         if (!booking) {
-            await this.passengerRepository.restoreSeats(tripId, selectedSeats);
+            await this.passengerRepository.restoreSeats(tripId, seatNumbers);
             throw new Error("Booking failed. Please try again.");
         }
         return booking;
@@ -74,14 +79,57 @@ class PassengerService {
 
     async cancelBooking(userId, bookingId, reason = "User canceled") {
         const booking = await this.passengerRepository.cancelBooking(bookingId, userId, reason);
-        if (!booking) throw new Error("Booking not found or already canceled");
+        if (!booking) throw new Error("Booking not found or already cancelled");
+    
+        const cancelledSeats = booking.selectedSeats
+            .filter(seat => seat.status === 'cancelled')
+            .map(seat => seat.seatNumber);
+    
+        if (cancelledSeats.length > 0) {
+            await this.passengerRepository.addSeatsBackToTrip(booking.tripId, cancelledSeats);
+        }
         return booking;
     }
     
-    async deleteBooking(userId, bookingId) {
-        const booking = await this.passengerRepository.deleteBooking(bookingId, userId);
-        if (!booking) throw new Error("Booking not found or already deleted");
-        return booking;
+    async cancelPartialBooking(userId, bookingId, seatNumbers, reason = "User cancelled selected seats") {
+        const booking = await this.passengerRepository.findBookingByIdAndUser(bookingId, userId);
+        if (!booking || booking.status === "cancelled") {
+            throw new Error("Booking not found or already cancelled");
+        }
+    
+        const now = new Date();
+        const updatedSeats = [];
+        const cancelledSeatNumbers = [];
+    
+        for (let seat of booking.selectedSeats) {
+            if (seatNumbers.includes(seat.seatNumber) && seat.status !== 'cancelled') {
+                seat.status = 'cancelled';
+                seat.cancelledAt = now;
+                cancelledSeatNumbers.push(seat.seatNumber);
+            }
+            updatedSeats.push(seat);
+        }
+    
+        if (cancelledSeatNumbers.length === 0) {
+            throw new Error("No valid seats to cancel");
+        }
+    
+        await this.passengerRepository.updateBookingSeats(bookingId, updatedSeats);
+    
+        const activeSeatsCount = updatedSeats.filter(seat => seat.status !== 'cancelled').length;
+        const trip = await this.passengerRepository.getTripById(booking.tripId);
+    
+        const updatedTotalPrice = activeSeatsCount * trip.price;
+        const newStatus = activeSeatsCount === 0 ? 'cancelled' : booking.status;
+
+        await this.passengerRepository.updateBookingPartial(bookingId, {
+            totalPrice: updatedTotalPrice,
+            status: newStatus
+        });
+        await this.passengerRepository.addSeatsBackToTrip(booking.tripId, cancelledSeatNumbers);    
+        await this.passengerRepository.createCancellationEntry(bookingId, userId, reason);    
+        const updatedBooking = await this.passengerRepository.findBookingByIdAndUser(bookingId, userId);
+        return updatedBooking;
     }
 
     async getProfile(userId) {

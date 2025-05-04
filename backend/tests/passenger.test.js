@@ -68,31 +68,26 @@ describe("PassengerService Unit Tests", () => {
         price: 500,
         availableSeats: ["2A", "2B"]
       };
-
+  
       Trip.findOneAndUpdate.mockResolvedValue(tripData);
-
-      const booking = {
+  
+      const expectedBookingPayload = {
         userId: "u1",
         tripId: "t1",
-        selectedSeats: ["2A"],
+        selectedSeats: [{ seatNumber: "2A", status: "booked" }],
         totalPrice: 500,
         status: "confirmed"
       };
-
-      Booking.create.mockResolvedValue(booking);
-
+  
+      Booking.create.mockResolvedValue(expectedBookingPayload);
+  
       const result = await passengerService.bookTicket("u1", {
         tripId: "t1",
-        selectedSeats: ["2A"]
+        selectedSeats: [{ seatNumber: "2A" }]
       });
-      expect(result).toEqual(booking);
-      expect(Booking.create).toHaveBeenCalledWith({
-        userId: "u1",
-        tripId: "t1",
-        selectedSeats: ["2A"],
-        totalPrice: 500,
-        status: "confirmed"
-      });
+  
+      expect(result).toEqual(expectedBookingPayload);
+      expect(Booking.create).toHaveBeenCalledWith(expectedBookingPayload);
     });
   
     it("should throw error if booking fails", async () => {
@@ -103,13 +98,13 @@ describe("PassengerService Unit Tests", () => {
       };
       Trip.findOneAndUpdate.mockResolvedValue(tripData);
       Booking.create.mockResolvedValue(null);
-
+  
       await expect(
         passengerService.bookTicket("u1", {
           tripId: "t1",
-          selectedSeats: ["2A"]
+          selectedSeats: [{ seatNumber: "2A" }]
         })
-      ).rejects.toThrow("Booking failed");
+      ).rejects.toThrow("Booking failed. Please try again.");
     });
   
     it("should throw error if trip not found", async () => {
@@ -117,7 +112,7 @@ describe("PassengerService Unit Tests", () => {
       await expect(
         passengerService.bookTicket("u1", {
           tripId: "badTrip",
-          selectedSeats: ["2A"]
+          selectedSeats: [{ seatNumber: "2A" }]
         })
       ).rejects.toThrow("Some or all selected seats are already booked.");
     });
@@ -159,18 +154,45 @@ describe("PassengerService Unit Tests", () => {
 
   describe("cancelBooking", () => {
     it("should cancel and return updated booking", async () => {
-      const booking = { _id: "b1", status: "canceled" };
-      Booking.findOneAndUpdate.mockResolvedValue(booking);
-      Cancellation.create.mockResolvedValue({});
+      const now = new Date();
+      const booking = {
+        _id: "b1",
+        userId: "u1",
+        tripId: "t1",
+        status: "confirmed",
+        selectedSeats: [
+          { seatNumber: "A1", status: "booked" },
+          { seatNumber: "A2", status: "booked" }
+        ],
+        save: jest.fn().mockResolvedValue(true)
+      };
+
+      Booking.findOne.mockResolvedValue(booking);
+      Cancellation.create.mockResolvedValue(true);
+
+      Trip.findById.mockResolvedValue({
+        availableSeats: [],
+        save: jest.fn().mockResolvedValue(true)
+      });
 
       const result = await passengerService.cancelBooking("u1", "b1", "no need");
-      expect(result.status).toBe("canceled");
+
+      expect(result.status).toBe("cancelled");
+      expect(result.selectedSeats.every(seat => seat.status === "cancelled")).toBe(true);
+      expect(Booking.findOne).toHaveBeenCalledWith({ _id: "b1", userId: "u1" });
+      expect(Cancellation.create).toHaveBeenCalledWith({
+        bookingId: "b1",
+        userId: "u1",
+        reason: "no need"
+      });
     });
 
-    it("should throw error if booking not found", async () => {
-      Booking.findOneAndUpdate.mockResolvedValue(null);
+    it("should throw error if booking not found or already cancelled", async () => {
+      Booking.findOne.mockResolvedValue(null);
 
-      await expect(passengerService.cancelBooking("u1", "b1")).rejects.toThrow("Booking not found or already canceled");
+      await expect(passengerService.cancelBooking("u1", "b1")).rejects.toThrow(
+        "Booking not found or already cancelled"
+      );
     });
   });
 

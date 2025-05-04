@@ -13,7 +13,7 @@ router.post('/bookings', authMiddleware.protectUser, passengerController.bookTic
 router.get('/bookings', authMiddleware.protectUser, passengerController.viewBookingHistory);
 router.get('/bookings/:id', authMiddleware.protectUser, passengerController.getBooking);
 router.patch("/bookings/:id/cancel", authMiddleware.protectUser, passengerController.cancelBooking);
-router.delete('/bookings/:id', authMiddleware.protectUser, passengerController.deleteBooking);
+router.patch('/bookings/:id/partial-cancel', authMiddleware.protectUser, passengerController.cancelPartialBooking);
 
 router.get('/profile/:id', authMiddleware.protectUser, passengerController.viewProfile);
 router.patch('/profile/:id', authMiddleware.protectUser, passengerController.updateProfile);

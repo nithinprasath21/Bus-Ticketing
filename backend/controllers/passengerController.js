@@ -86,19 +86,23 @@ class PassengerController {
         }
     };
 
-    deleteBooking = async (req, res, next) => {
+    cancelPartialBooking = async (req, res, next) => {
         try {
-            const bookingId = req.params.id;
-            const booking = await this.passengerService.deleteBooking(req.user.id, bookingId);
-            return res.status(200).json({
-                success: true,
-                message: "Booking deleted successfully",
-                data: booking
-            });
+          const bookingId = req.params.id;
+          const { seats } = req.body;
+          if (!Array.isArray(seats) || seats.length === 0) {
+            return res.status(400).json({ success: false, message: "Seats array required" });
+          }
+          const booking = await this.passengerService.cancelPartialBooking(req.user.id, bookingId, seats);
+          return res.status(200).json({
+            success: true,
+            message: "Seats cancelled successfully",
+            data: booking
+          });
         } catch (err) {
             next(err);
         }
-    };
+      };
 
     viewProfile = async (req, res, next) => {
         try {
