@@ -46,6 +46,7 @@ class PassengerService {
         const trip = await this.passengerRepository.reserveSeatsIfAvailable(tripId, seatNumbers);
         if (!trip) {
             throw new Error("Some or all selected seats are already booked.");
+            throw new Error("Some or all selected seats are already booked.");
         }
         const totalPrice = trip.price * selectedSeats.length;
         const formattedSeats = selectedSeats.map(seat => ({
@@ -57,6 +58,7 @@ class PassengerService {
             tripId,
             selectedSeats: formattedSeats,
             totalPrice,
+            status: "confirmed"
             status: "confirmed"
         };
         const booking = await this.passengerRepository.createBooking(bookingPayload);
