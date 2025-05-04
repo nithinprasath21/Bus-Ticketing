@@ -67,7 +67,6 @@ describe("PassengerService Unit Tests", () => {
         _id: "t1",
         price: 500,
         availableSeats: ["2A", "2B"]
-        availableSeats: ["2A", "2B"]
       };
   
       Trip.findOneAndUpdate.mockResolvedValue(tripData);
@@ -96,12 +95,10 @@ describe("PassengerService Unit Tests", () => {
         _id: "t1",
         price: 500,
         availableSeats: ["2A", "2B"]
-        availableSeats: ["2A", "2B"]
       };
       Trip.findOneAndUpdate.mockResolvedValue(tripData);
-      Trip.findOneAndUpdate.mockResolvedValue(tripData);
       Booking.create.mockResolvedValue(null);
-
+  
       await expect(
         passengerService.bookTicket("u1", {
           tripId: "t1",
@@ -111,7 +108,6 @@ describe("PassengerService Unit Tests", () => {
     });
   
     it("should throw error if trip not found", async () => {
-      Trip.findOneAndUpdate.mockResolvedValue(null);
       Trip.findOneAndUpdate.mockResolvedValue(null);
       await expect(
         passengerService.bookTicket("u1", {
