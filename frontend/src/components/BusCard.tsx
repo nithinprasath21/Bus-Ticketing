@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const BusCard: React.FC<{ bus: any }> = ({ bus }) => {
+  const navigate = useNavigate();
   const { busId, source, destination, departureTime, arrivalTime, price, availableSeats } = bus;
 
   const formatDateTime = (dateStr: string) => {
@@ -18,9 +20,12 @@ const BusCard: React.FC<{ bus: any }> = ({ bus }) => {
   const departureFormatted = formatDateTime(departureTime);
   const arrivalFormatted = formatDateTime(arrivalTime);
 
+  const handleClick = () => {
+    navigate(`/booking/${bus._id}`, { state: { bus } });
+  };
+
   return (
-    <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md hover:shadow-xl transition-all duration-300 hover:bg-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-      {/* Left Section */}
+    <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md hover:shadow-xl transition-all duration-300 hover:bg-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4" onClick={handleClick}>
       <div className="flex-1">
         <h2 className="text-xl font-bold text-white">{busId.busName}</h2>
         <p className="text-sm text-gray-400 mb-3">{busId.busNumber}</p>
@@ -35,7 +40,6 @@ const BusCard: React.FC<{ bus: any }> = ({ bus }) => {
         </div>
       </div>
 
-      {/* Right Section */}
       <div className="sm:text-right flex sm:flex-col justify-between sm:justify-start items-end sm:items-end w-full sm:w-auto">
         <div>
           <p className="text-xl font-bold text-green-400">₹{price}</p>

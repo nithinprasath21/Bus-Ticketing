@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router } from "react-router-dom";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import ForgotPassword from "./components/ForgotPassword";
@@ -42,7 +43,13 @@ const App: React.FC = () => {
     }
   };
 
-  return <div className="min-h-screen bg-gray-950 text-white">{renderView()}</div>;
+  return (
+    <Router>
+      <div className="min-h-screen bg-gray-950 text-white">
+        {renderView()}
+      </div>
+    </Router>
+  );
 };
 
 export default App;

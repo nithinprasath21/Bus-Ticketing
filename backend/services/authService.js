@@ -52,7 +52,6 @@ class AuthService {
             error.statusCode = 404;
             throw error;
         }
-        const bcrypt = require("bcryptjs");
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await this.authRepository.updateUserPasswordByEmail(email, hashedPassword);
         return true;
