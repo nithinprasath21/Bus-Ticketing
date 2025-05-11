@@ -4,6 +4,8 @@ import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import ForgotPassword from "./components/ForgotPassword";
 import PassengerLanding from "./components/PassengerLanding";
+import OperatorLanding from "./components/OperatorLanding";
+import AdminLanding from "./components/AdminLandling";
 
 const App: React.FC = () => {
   const [view, setView] = useState<"signin" | "signup" | "forgot" | "passenger" | "operator" | "admin">("signin");
@@ -35,9 +37,9 @@ const App: React.FC = () => {
       case "passenger":
         return <PassengerLanding onLogout={handleLogout} />;
       case "operator":
-        return <div className="text-white text-center mt-20">Welcome, Operator!</div>;
+        return <OperatorLanding onLogout={handleLogout} />;
       case "admin":
-        return <div className="text-white text-center mt-20">Welcome, Admin!</div>;
+        return <AdminLanding onLogout={handleLogout} />;
       default:
         return <SignIn onNavigate={setView} onLoginSuccess={handleLoginSuccess} />;
     }

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import BusBookingPage from "./BusBookingPage";
+import MyBookingsPage from "./MyBookingsPage";
 import api from "../api";
 import BusCard from "./BusCard";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+import CancelBookingPage from "./CancelBookingPage";
 
 interface PassengerLandingProps {
   onLogout: () => void;
@@ -23,6 +25,8 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
   const [error, setError] = useState("");
   const [maxPrice, setMaxPrice] = useState(2000);
   const [selectedPriceRange, setSelectedPriceRange] = useState<[number, number]>([0, 2000]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleSelection = (
     value: string,
@@ -32,6 +36,8 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
       prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
     );
   };
+
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   const handleSearch = async () => {
     setError("");
@@ -78,14 +84,47 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
         path="/"
         element={
           <div className="min-h-screen bg-gray-950 text-white">
-            <nav className="flex justify-between items-center px-6 py-4 bg-gray-900 shadow-md">
+            <nav className="flex justify-between items-center px-6 py-4 bg-gray-900 shadow-md relative">
               <h1 className="text-xl font-semibold">Bus Ticketing</h1>
-              <button
-                onClick={onLogout}
-                className="bg-red-600 px-4 py-1 rounded hover:bg-red-700 transition"
-              >
-                Logout
-              </button>
+              <div className="flex items-center space-x-6">
+                <button
+                  onClick={() => navigate("/bookings")}
+                  className="hover:underline text-sm"
+                >
+                  View Bookings
+                </button>
+
+                <div className="relative">
+                  <button
+                    onClick={toggleDropdown}
+                    className="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm font-semibold"
+                  >
+                    P
+                  </button>
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white text-gray-900 rounded shadow-md z-10">
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          alert("Redirect to Profile Page");
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          onLogout();
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </nav>
 
             <div className="max-w-5xl mx-auto px-4 py-10">
@@ -188,6 +227,8 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
         }
       />
       <Route path="/booking/:busId" element={<BusBookingPage />} />
+      <Route path="/bookings" element={<MyBookingsPage />} />
+      <Route path="/cancel-booking" element={<CancelBookingPage />} />
     </Routes>
   );
 };
