@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import api from "../api";
 import classNames from "classnames";
+import {
+  useCancelBookingMutation,
+  usePartialCancelBookingMutation,
+} from "../api/bookingApi";
 
 const CancelBookingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,8 +16,11 @@ const CancelBookingPage: React.FC = () => {
       .filter((s: any) => s.status === "booked")
       .map((s: any) => s.seatNumber)
   );
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [cancelBooking, { isLoading: isCancelling }] = useCancelBookingMutation();
+  const [partialCancelBooking, { isLoading: isPartialCancelling }] =
+    usePartialCancelBookingMutation();
 
   const toggleSeat = (seat: string) => {
     setSelectedSeats((prev) =>
@@ -24,32 +30,28 @@ const CancelBookingPage: React.FC = () => {
 
   const handleCancel = async () => {
     if (!window.confirm("Are you sure? Ticket cancellation is irreversible.")) return;
-    setLoading(true);
+
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
+      const totalBookable = booking.selectedSeats.filter(
+        (s: any) => s.status === "booked"
+      ).length;
 
-      if (
-        selectedSeats.length ===
-        booking.selectedSeats.filter((s: any) => s.status === "booked").length
-      ) {
-        await api.patch(`/passenger/bookings/${booking._id}/cancel`, {}, { headers });
+      if (selectedSeats.length === totalBookable) {
+        await cancelBooking({ bookingId: booking._id }).unwrap();
       } else {
-        await api.patch(
-          `/passenger/bookings/${booking._id}/partial-cancel`,
-          { seats: selectedSeats },
-          { headers }
-        );
+        await partialCancelBooking({
+          bookingId: booking._id,
+          seats: selectedSeats,
+        }).unwrap();
       }
 
       alert("Cancellation successful!");
       navigate("/bookings");
     } catch (err) {
+      console.error(err);
       setError("Failed to cancel seats. Try again.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -121,10 +123,14 @@ const CancelBookingPage: React.FC = () => {
         <div className="mt-4">
           <button
             onClick={handleCancel}
-            disabled={loading || selectedSeats.length === 0}
+            disabled={
+              isCancelling || isPartialCancelling || selectedSeats.length === 0
+            }
             className="bg-red-600 hover:bg-red-700 px-6 py-2 text-lg font-semibold rounded disabled:opacity-50"
           >
-            {loading ? "Processing..." : "Cancel Selected Seats"}
+            {isCancelling || isPartialCancelling
+              ? "Processing..."
+              : "Cancel Selected Seats"}
           </button>
         </div>
 

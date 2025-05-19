@@ -1,38 +1,36 @@
-import React, { useState } from "react";
-import api from "../api";
+import React, { useState } from 'react';
+import { useLoginMutation } from '../api/authApi';
 
 interface SignInProps {
-  onNavigate: (view: "signup" | "forgot" | "passenger" | "operator" | "admin") => void;
-  onLoginSuccess: (role: "passenger" | "operator" | "admin") => void;
+  onNavigate: (view: 'signup' | 'forgot' | 'passenger' | 'operator' | 'admin') => void;
+  onLoginSuccess: (role: 'passenger' | 'operator' | 'admin') => void;
 }
 
 const SignIn: React.FC<SignInProps> = ({ onNavigate, onLoginSuccess }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [login, { isLoading }] = useLoginMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     try {
-      const res = await api.post("/auth/login", { email, password });
-
-      if (res.data.success) {
-        const { token, role } = res.data.data;
-        localStorage.setItem("token", token);
-
-        if (["passenger", "operator", "admin"].includes(role)) {
-          onLoginSuccess(role as "passenger" | "operator" | "admin");
+      const res: any = await login({ email, password }).unwrap();
+      if (res.success) {
+        const { token, role } = res.data;
+        localStorage.setItem('token', token);
+        if (['passenger', 'operator', 'admin'].includes(role)) {
+          onLoginSuccess(role);
         } else {
-          setError("Unknown role received.");
+          setError('Unknown role received.');
         }
       } else {
-        setError("Login failed. Please try again.");
+        setError('Login failed. Please try again.');
       }
     } catch (err: any) {
-      console.error("Login error:", err);
-      setError(err.response?.data?.message || "An error occurred during login.");
+      setError(err?.data?.message || 'An error occurred during login.');
     }
   };
 
@@ -63,7 +61,7 @@ const SignIn: React.FC<SignInProps> = ({ onNavigate, onLoginSuccess }) => {
               </label>
               <button
                 type="button"
-                onClick={() => onNavigate("forgot")}
+                onClick={() => onNavigate('forgot')}
                 className="text-sm text-blue-400 hover:underline"
               >
                 Forgot password?
@@ -77,21 +75,22 @@ const SignIn: React.FC<SignInProps> = ({ onNavigate, onLoginSuccess }) => {
               className="w-full bg-gray-800 border border-gray-700 px-3 py-2 rounded-md text-white text-sm"
             />
           </div>
-  
+
           {error && <p className="text-sm text-red-500">{error}</p>}
-  
+
           <button
             type="submit"
             className="w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
+            disabled={isLoading}
           >
-            Login
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
-  
+
           <div className="text-sm text-center text-gray-400 mt-4">
-            Don't have an account?{" "}
+            Don't have an account?{' '}
             <button
               className="text-blue-400 hover:underline"
-              onClick={() => onNavigate("signup")}
+              onClick={() => onNavigate('signup')}
             >
               Sign up
             </button>
@@ -99,7 +98,7 @@ const SignIn: React.FC<SignInProps> = ({ onNavigate, onLoginSuccess }) => {
         </form>
       </div>
     </div>
-  );  
+  );
 };
 
 export default SignIn;

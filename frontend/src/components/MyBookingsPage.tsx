@@ -1,29 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api";
 import classNames from "classnames";
+import { useGetBookingsQuery } from "../api/passengerApi";
 
 const MyBookingsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState<any[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await api.get("/passenger/bookings", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setBookings(res.data.data || []);
-      } catch (err) {
-        console.error("Error fetching bookings:", err);
-      }
-    };
-    fetchBookings();
-  }, []);
+  const {
+    data: bookings = [],
+    isLoading,
+    isError,
+    error,
+  } = useGetBookingsQuery();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -56,6 +45,23 @@ const MyBookingsPage: React.FC = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex justify-center items-center text-xl">
+        Loading your bookings...
+      </div>
+    );
+  }
+
+  if (isError) {
+    console.error(error);
+    return (
+      <div className="min-h-screen bg-gray-950 text-red-500 flex justify-center items-center text-xl">
+        Failed to load bookings. Please try again later.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 flex flex-col items-center relative">
@@ -101,8 +107,7 @@ const MyBookingsPage: React.FC = () => {
                 </p>
                 <p className="text-base mb-1">
                   <span className="font-medium">Departure:</span>{" "}
-                  {formatDate(trip.departureTime)}{" "}
-                  {formatTime(trip.departureTime)}
+                  {formatDate(trip.departureTime)} {formatTime(trip.departureTime)}
                 </p>
                 <p className="text-base mb-1">
                   <span className="font-medium">Arrival:</span>{" "}
@@ -240,7 +245,9 @@ const MyBookingsPage: React.FC = () => {
                     <span
                       className={classNames(
                         "w-3 h-3 rounded-full",
-                        seat.status === "booked" ? "bg-green-500" : "bg-red-500"
+                        seat.status === "booked"
+                          ? "bg-green-500"
+                          : "bg-red-500"
                       )}
                     />
                     <span className="text-base font-medium">
@@ -257,7 +264,9 @@ const MyBookingsPage: React.FC = () => {
             <div className="mt-6 flex justify-end">
               <button
                 className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded text-lg"
-                onClick={() => navigate("/cancel-booking", { state: { booking: selectedBooking } })}
+                onClick={() =>
+                  navigate("/cancel-booking", { state: { booking: selectedBooking } })
+                }
               >
                 Cancel Trip
               </button>

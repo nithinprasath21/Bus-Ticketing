@@ -1,18 +1,19 @@
-import React, { useState } from "react";
-import api from "../api";
+import React, { useState } from 'react';
+import { useForgotPasswordMutation } from '../api/authApi';
 
 interface ForgotPasswordProps {
-  onNavigate: (view: "signin") => void;
+  onNavigate: (view: 'signin') => void;
 }
 
 const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
   const [form, setForm] = useState({
-    email: "",
-    newPassword: "",
-    confirmPassword: "",
+    email: '',
+    newPassword: '',
+    confirmPassword: '',
   });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -20,29 +21,30 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setError('');
+    setSuccess('');
 
     if (!form.email || !form.newPassword || !form.confirmPassword) {
-      return setError("All fields are required");
+      return setError('All fields are required');
     }
     if (form.newPassword !== form.confirmPassword) {
-      return setError("Passwords do not match");
+      return setError('Passwords do not match');
     }
 
     try {
-      const res = await api.post("/auth/forgot-password", {
+      const res: any = await forgotPassword({
         email: form.email,
         newPassword: form.newPassword,
-      });
-      if (res.data.success) {
-        setSuccess("Password reset successful");
-        setForm({ email: "", newPassword: "", confirmPassword: "" });
+      }).unwrap();
+
+      if (res.success) {
+        setSuccess('Password reset successful');
+        setForm({ email: '', newPassword: '', confirmPassword: '' });
       } else {
-        setError("Reset failed. Try again.");
+        setError('Reset failed. Try again.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "An error occurred.");
+      setError(err?.data?.message || 'An error occurred.');
     }
   };
 
@@ -96,19 +98,20 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
           <button
             type="submit"
             className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-md transition"
+            disabled={isLoading}
           >
-            Send
+            {isLoading ? 'Sending...' : 'Send'}
           </button>
           <p className="text-sm text-gray-400 text-center mt-3">
-            Back to{" "}
-            <button onClick={() => onNavigate("signin")} className="text-blue-400 hover:underline">
+            Back to{' '}
+            <button onClick={() => onNavigate('signin')} className="text-blue-400 hover:underline">
               Sign in
             </button>
           </p>
         </form>
       </div>
     </div>
-  );  
+  );
 };
 
 export default ForgotPassword;

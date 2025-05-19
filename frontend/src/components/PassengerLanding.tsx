@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import BusBookingPage from "./BusBookingPage";
-import MyBookingsPage from "./MyBookingsPage";
-import api from "../api";
+import CancelBookingPage from "./CancelBookingPage";
 import BusCard from "./BusCard";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import CancelBookingPage from "./CancelBookingPage";
+import { useLazySearchBusesQuery } from "../api/passengerApi";
+import MyBookingsPage from "./MyBookingsPage";
 
 interface PassengerLandingProps {
   onLogout: () => void;
@@ -21,12 +21,14 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
   const [date, setDate] = useState("");
   const [selectedAcTypes, setSelectedAcTypes] = useState<string[]>([]);
   const [selectedSeatTypes, setSelectedSeatTypes] = useState<string[]>([]);
-  const [buses, setBuses] = useState<any[]>([]);
-  const [error, setError] = useState("");
-  const [maxPrice, setMaxPrice] = useState(2000);
   const [selectedPriceRange, setSelectedPriceRange] = useState<[number, number]>([0, 2000]);
+  const [maxPrice, setMaxPrice] = useState(2000);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
+
+  const [triggerSearch, { data, isFetching }] = useLazySearchBusesQuery();
 
   const toggleSelection = (
     value: string,
@@ -47,36 +49,29 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const params = new URLSearchParams({ source, destination });
-      if (date) params.append("date", date);
-
-      const res = await api.get(`/passenger/buses/search?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const prices = res.data.data.map((b: any) => b.price);
+      const result = await triggerSearch({ source, destination, date }).unwrap();
+      const buses = result?.data || [];
+      const prices = buses.map((b: any) => b.price);
       const max = Math.max(...prices, 0);
       setMaxPrice(max);
       setSelectedPriceRange([0, max]);
-
-      const filtered = res.data.data.filter((bus: any) => {
-        const acType = bus.busId?.busType?.acType?.toLowerCase();
-        const seatType = bus.busId?.busType?.seatType?.toLowerCase();
-
-        const acMatch = selectedAcTypes.length === 0 || selectedAcTypes.map(t => t.toLowerCase()).includes(acType);
-        const seatMatch = selectedSeatTypes.length === 0 || selectedSeatTypes.map(t => t.toLowerCase()).includes(seatType);
-        const priceMatch = bus.price >= selectedPriceRange[0] && bus.price <= selectedPriceRange[1];
-
-        return acMatch && seatMatch && priceMatch;
-      });
-
-      setBuses(filtered);
-
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to fetch buses.");
+      setError(err?.data?.message || "Failed to fetch buses.");
     }
   };
+
+  const buses: any[] = data?.data || [];
+
+  const filteredBuses = buses.filter((bus: any) => {
+    const acType = bus.busId?.busType?.acType?.toLowerCase();
+    const seatType = bus.busId?.busType?.seatType?.toLowerCase();
+
+    const acMatch = selectedAcTypes.length === 0 || selectedAcTypes.map(t => t.toLowerCase()).includes(acType);
+    const seatMatch = selectedSeatTypes.length === 0 || selectedSeatTypes.map(t => t.toLowerCase()).includes(seatType);
+    const priceMatch = bus.price >= selectedPriceRange[0] && bus.price <= selectedPriceRange[1];
+
+    return acMatch && seatMatch && priceMatch;
+  });
 
   return (
     <Routes>
@@ -93,7 +88,6 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
                 >
                   View Bookings
                 </button>
-
                 <div className="relative">
                   <button
                     onClick={toggleDropdown}
@@ -130,7 +124,9 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
             <div className="max-w-5xl mx-auto px-4 py-10">
               <div className="flex gap-4 mb-6">
                 <div className="w-1/2">
-                  <label className="block mb-1 text-sm text-gray-300">Pick-up <span className="text-red-500">*</span></label>
+                  <label className="block mb-1 text-sm text-gray-300">
+                    Pick-up <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
@@ -140,7 +136,9 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
                   />
                 </div>
                 <div className="w-1/2">
-                  <label className="block mb-1 text-sm text-gray-300">Destination <span className="text-red-500">*</span></label>
+                  <label className="block mb-1 text-sm text-gray-300">
+                    Destination <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
@@ -169,7 +167,10 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
                       <button
                         key={type}
                         onClick={() => toggleSelection(type, setSelectedAcTypes)}
-                        className={`px-4 py-1 rounded-full border text-sm ${selectedAcTypes.includes(type) ? "bg-purple-600 border-purple-600" : "bg-gray-800 border-gray-600"}`}
+                        className={`px-4 py-1 rounded-full border text-sm ${selectedAcTypes.includes(type)
+                          ? "bg-purple-600 border-purple-600"
+                          : "bg-gray-800 border-gray-600"
+                          }`}
                       >
                         {type}
                       </button>
@@ -178,14 +179,19 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
                       <button
                         key={type}
                         onClick={() => toggleSelection(type, setSelectedSeatTypes)}
-                        className={`px-4 py-1 rounded-full border text-sm ${selectedSeatTypes.includes(type) ? "bg-purple-600 border-purple-600" : "bg-gray-800 border-gray-600"}`}
+                        className={`px-4 py-1 rounded-full border text-sm ${selectedSeatTypes.includes(type)
+                          ? "bg-purple-600 border-purple-600"
+                          : "bg-gray-800 border-gray-600"
+                          }`}
                       >
                         {type}
                       </button>
                     ))}
 
                     <div className="ml-auto w-full md:w-1/2 mt-4 md:mt-0">
-                      <label className="block mb-2 text-sm text-gray-300">Price Range: ₹{selectedPriceRange[0]} - ₹{selectedPriceRange[1]}</label>
+                      <label className="block mb-2 text-sm text-gray-300">
+                        Price Range: ₹{selectedPriceRange[0]} - ₹{selectedPriceRange[1]}
+                      </label>
                       <Slider
                         range
                         min={0}
@@ -196,12 +202,24 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
                             setSelectedPriceRange([value[0], value[1]]);
                           }
                         }}
-                        trackStyle={[{ backgroundColor: '#9333ea', height: 6 }]}
+                        trackStyle={[{ backgroundColor: "#9333ea", height: 6 }]}
                         handleStyle={[
-                          { borderColor: '#9333ea', height: 18, width: 18, marginTop: -6, backgroundColor: '#9333ea' },
-                          { borderColor: '#9333ea', height: 18, width: 18, marginTop: -6, backgroundColor: '#9333ea' }
+                          {
+                            borderColor: "#9333ea",
+                            height: 18,
+                            width: 18,
+                            marginTop: -6,
+                            backgroundColor: "#9333ea",
+                          },
+                          {
+                            borderColor: "#9333ea",
+                            height: 18,
+                            width: 18,
+                            marginTop: -6,
+                            backgroundColor: "#9333ea",
+                          },
                         ]}
-                        railStyle={{ backgroundColor: '#4b5563', height: 6 }}
+                        railStyle={{ backgroundColor: "#4b5563", height: 6 }}
                       />
                     </div>
                   </div>
@@ -212,13 +230,13 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
                 onClick={handleSearch}
                 className="w-full bg-purple-600 py-2 rounded hover:bg-purple-700 transition mb-6"
               >
-                Search Buses
+                {isFetching ? "Searching..." : "Search Buses"}
               </button>
 
               {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
               <div className="space-y-4">
-                {buses.map((bus) => (
+                {filteredBuses.map((bus) => (
                   <BusCard key={bus._id} bus={bus} />
                 ))}
               </div>

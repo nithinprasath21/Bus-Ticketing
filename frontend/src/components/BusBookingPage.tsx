@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import api from "../api";
+import {
+  useBookSeatsMutation,
+  useGetAvailableSeatsQuery,
+} from "../api/bookingApi";
 
 const BusBookingPage: React.FC = () => {
   const { state } = useLocation();
@@ -8,10 +11,17 @@ const BusBookingPage: React.FC = () => {
   const bus = state?.bus;
 
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
-  const [availableSeats, setAvailableSeats] = useState<string[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [isBooking, setIsBooking] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+
+  const tripId = bus?._id;
+
+  const {
+    data: availableSeats = [],
+    refetch: refetchSeats,
+  } = useGetAvailableSeatsQuery(tripId, { skip: !tripId });
+
+  const [bookSeats, { isLoading: isBooking }] = useBookSeatsMutation();
 
   const toggleSeat = (seat: string) => {
     setSelectedSeats((prev) =>
@@ -20,59 +30,19 @@ const BusBookingPage: React.FC = () => {
   };
 
   const handleBooking = async () => {
-    if (!bus?._id) return;
+    if (!tripId) return;
 
     try {
-      setIsBooking(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("User not authenticated.");
-        return;
-      }
-
-      await api.post(
-        "/passenger/bookings",
-        {
-          tripId: bus._id,
-          selectedSeats: selectedSeats.map((seat) => ({ seatNumber: seat })),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      await bookSeats({ tripId, selectedSeats }).unwrap();
       setToastMessage("🎉 Booking Confirmed!");
       setShowConfirmDialog(false);
       setSelectedSeats([]);
-      await fetchAvailableSeats();
+      refetchSeats();
     } catch (err) {
       console.error("Booking failed:", err);
       setToastMessage("❌ Booking Failed. Please try again.");
-    } finally {
-      setIsBooking(false);
     }
   };
-
-  const fetchAvailableSeats = async () => {
-    if (!bus?._id) return;
-    try {
-      const token = localStorage.getItem("token");
-      const response = await api.get(`/passenger/buses/${bus._id}/seats`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setAvailableSeats(response.data.data || []);
-    } catch (err) {
-      console.error("Error fetching available seats:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchAvailableSeats();
-  }, [bus]);
 
   useEffect(() => {
     if (toastMessage) {
@@ -131,11 +101,15 @@ const BusBookingPage: React.FC = () => {
       {showConfirmDialog && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70">
           <div className="bg-gray-900 text-white rounded-2xl p-8 w-[90%] max-w-md shadow-2xl border border-purple-600">
-            <h2 className="text-2xl font-bold mb-4 text-center">Confirm Your Booking</h2>
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              Confirm Your Booking
+            </h2>
             <p className="text-center mb-6">
               You are about to book {selectedSeats.length} seat
-              {selectedSeats.length > 1 ? "s" : ""}: {" "}
-              <span className="text-purple-400 font-semibold">{selectedSeats.join(", ").toUpperCase()}</span>
+              {selectedSeats.length > 1 ? "s" : ""}:{" "}
+              <span className="text-purple-400 font-semibold">
+                {selectedSeats.join(", ").toUpperCase()}
+              </span>
               <br />
               Total: ₹{selectedSeats.length * (bus?.price || 0)}
             </p>
