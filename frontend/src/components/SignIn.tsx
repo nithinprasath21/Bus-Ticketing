@@ -43,10 +43,11 @@ const SignIn: React.FC<SignInProps> = ({ onNavigate, onLoginSuccess }) => {
         </p>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="text-sm text-gray-300 block mb-1">
+            <label htmlFor="email" className="text-sm text-gray-300 block mb-1">
               Email <span className="text-red-500">*</span>
             </label>
             <input
+              id="email"
               type="email"
               required
               value={email}
@@ -56,7 +57,7 @@ const SignIn: React.FC<SignInProps> = ({ onNavigate, onLoginSuccess }) => {
           </div>
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-sm text-gray-300">
+              <label htmlFor="password" className="text-sm text-gray-300">
                 Password <span className="text-red-500">*</span>
               </label>
               <button
@@ -68,6 +69,7 @@ const SignIn: React.FC<SignInProps> = ({ onNavigate, onLoginSuccess }) => {
               </button>
             </div>
             <input
+              id="password"
               type="password"
               required
               value={password}

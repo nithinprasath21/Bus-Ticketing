@@ -51,21 +51,62 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
         <h2 className="text-3xl font-semibold text-white text-center mb-2">Sign Up</h2>
         <p className="text-sm text-gray-400 text-center mb-6">Create your account</p>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {['name', 'email', 'phone', 'password'].map((field) => (
-            <div key={field}>
-              <label className="block text-sm font-medium text-gray-300 mb-1 capitalize">
-                {field} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type={field === 'password' ? 'password' : field === 'email' ? 'email' : 'text'}
-                name={field}
-                required
-                value={(form as any)[field]}
-                onChange={handleChange}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm text-white"
-              />
-            </div>
-          ))}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1 capitalize">
+              name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="name"
+              required
+              value={form.name}
+              onChange={handleChange}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm text-white"
+              data-testid="signup-name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1 capitalize">
+              email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              name="email"
+              required
+              value={form.email}
+              onChange={handleChange}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm text-white"
+              data-testid="signup-email"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1 capitalize">
+              phone <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="phone"
+              required
+              value={form.phone}
+              onChange={handleChange}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm text-white"
+              data-testid="signup-phone"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1 capitalize">
+              password <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              name="password"
+              required
+              value={form.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm text-white"
+              data-testid="signup-password"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
               Role <span className="text-red-500">*</span>
@@ -75,6 +116,7 @@ const SignUp: React.FC<SignUpProps> = ({ onNavigate }) => {
               value={form.role}
               onChange={handleChange}
               className="w-full h-[42px] px-3 bg-gray-800 border border-gray-700 rounded-md text-sm text-white"
+              data-testid="signup-role"
             >
               <option value="passenger">Passenger</option>
               <option value="operator">Operator</option>

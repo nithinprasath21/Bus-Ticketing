@@ -55,11 +55,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
         <p className="text-sm text-gray-400 text-center mb-6">Enter your details to reset password</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
               Email <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
+              id="email"
               name="email"
               required
               value={form.email}
@@ -68,11 +69,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300 mb-1">
               New Password <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
+              id="newPassword"
               name="newPassword"
               required
               value={form.newPassword}
@@ -81,11 +83,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-1">
               Confirm Password <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
+              id="confirmPassword"
               name="confirmPassword"
               required
               value={form.confirmPassword}
