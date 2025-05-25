@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const PassengerRepository = require("../repositories/passengerRepository");
 
 class PassengerService {
@@ -41,30 +42,44 @@ class PassengerService {
     }
 
     async bookTicket(userId, bookingData) {
-        const { tripId, selectedSeats } = bookingData;
-        const seatNumbers = selectedSeats.map(seat => seat.seatNumber);
-        const trip = await this.passengerRepository.reserveSeatsIfAvailable(tripId, seatNumbers);
-        if (!trip) {
-            throw new Error("Some or all selected seats are already booked.");
-        }
-        const totalPrice = trip.price * selectedSeats.length;
-        const formattedSeats = selectedSeats.map(seat => ({
-            seatNumber: seat.seatNumber,
-            status: 'booked'
-        }));
-        const bookingPayload = {
-            userId,
-            tripId,
-            selectedSeats: formattedSeats,
-            totalPrice,
-            status: "confirmed"
-        };
-        const booking = await this.passengerRepository.createBooking(bookingPayload);
-        if (!booking) {
-            await this.passengerRepository.restoreSeats(tripId, seatNumbers);
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        let seatsReserved = false;
+        try {
+            const { tripId, selectedSeats } = bookingData;
+            const seatNumbers = selectedSeats.map(seat => seat.seatNumber);
+            const trip = await this.passengerRepository.reserveSeatsIfAvailable(tripId, seatNumbers, session);
+            if (!trip) {
+                throw new Error("Some or all selected seats are already booked.");
+            }
+            const totalPrice = trip.price * selectedSeats.length;
+            const formattedSeats = selectedSeats.map(seat => ({
+                seatNumber: seat.seatNumber,
+                status: 'booked'
+            }));
+            const bookingPayload = {
+                userId,
+                tripId,
+                selectedSeats: formattedSeats,
+                totalPrice,
+                status: "confirmed"
+            };
+            const booking = await this.passengerRepository.createBooking(bookingPayload, session);
+            if (!booking) {
+                throw new Error("Booking creation failed.");
+            }
+            await session.commitTransaction();
+            session.endSession();
+            return booking;
+        } catch (error) {
+            await session.abortTransaction();
+            session.endSession();
+            if (seatsReserved) {
+                const seatNumbers = bookingData.selectedSeats.map(seat => seat.seatNumber);
+                await this.passengerRepository.restoreSeats(bookingData.tripId, seatNumbers);
+            }
             throw new Error("Booking failed. Please try again.");
         }
-        return booking;
     }
 
     async getBookingHistory(userId) {
@@ -77,59 +92,135 @@ class PassengerService {
         return booking;
     }
 
-    async cancelBooking(userId, bookingId, reason = "User canceled") {
-        const booking = await this.passengerRepository.cancelBooking(bookingId, userId, reason);
-        if (!booking) throw new Error("Booking not found or already cancelled");
-    
-        const cancelledSeats = booking.selectedSeats
-            .filter(seat => seat.status === 'cancelled')
-            .map(seat => seat.seatNumber);
-    
-        if (cancelledSeats.length > 0) {
-            await this.passengerRepository.addSeatsBackToTrip(booking.tripId, cancelledSeats);
+    async cancelBooking(userId, bookingId, reason = "Complete Booking Cancelled") {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
+            const booking = await this.passengerRepository.findBookingByIdAndUser(bookingId, userId, session);
+            if (!booking || booking.status === 'cancelled') {
+                throw new Error("Booking not found or already cancelled");
+            }
+            const now = new Date();
+            const updatedSeats = booking.selectedSeats.map(seat => ({
+                ...seat.toObject(),
+                status: 'cancelled',
+                cancelledAt: now
+            }));
+            const cancelledSeatNumbers = updatedSeats.map(seat => seat.seatNumber);
+            const updatePayload = {
+                selectedSeats: updatedSeats,
+                status: 'cancelled',
+                totalPrice: 0,
+                updatedAt: now
+            };
+            const updatedBooking = await this.passengerRepository.updateBookingFull(bookingId, updatePayload, session);
+            if (!updatedBooking) {
+                throw new Error("Failed to update booking status");
+            }
+            const tripDoc = await this.passengerRepository.getTripById(booking.tripId, session);
+            if (!tripDoc) {
+                throw new Error("Associated trip not found");
+            }
+            const updatedTrip = await this.passengerRepository.addSeatsBackToTrip(
+                tripDoc,
+                cancelledSeatNumbers,
+                session
+            );
+            if (!updatedTrip) {
+                throw new Error("Failed to add cancelled seats back to trip");
+            }
+            const cancellationLog = await this.passengerRepository.createCancellationEntry(
+                bookingId,
+                userId,
+                reason,
+                session
+            );
+            if (!cancellationLog || cancellationLog.length === 0) {
+                throw new Error("Failed to log cancellation entry");
+            }
+            await session.commitTransaction();
+            session.endSession();
+            return updatedBooking;
+        } catch (err) {
+            await session.abortTransaction();
+            session.endSession();
+            throw err;
         }
-        return booking;
     }
     
-    async cancelPartialBooking(userId, bookingId, seatNumbers, reason = "User cancelled selected seats") {
-        const booking = await this.passengerRepository.findBookingByIdAndUser(bookingId, userId);
-        if (!booking || booking.status === "cancelled") {
-            throw new Error("Booking not found or already cancelled");
-        }
-    
-        const now = new Date();
-        const updatedSeats = [];
-        const cancelledSeatNumbers = [];
-    
-        for (let seat of booking.selectedSeats) {
-            if (seatNumbers.includes(seat.seatNumber) && seat.status !== 'cancelled') {
-                seat.status = 'cancelled';
-                seat.cancelledAt = now;
-                cancelledSeatNumbers.push(seat.seatNumber);
+    async cancelPartialBooking(userId, bookingId, seatNumbers, reason = "Partial Booking Cancelled") {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
+            const booking = await this.passengerRepository.findBookingByIdAndUser(bookingId, userId, session);
+            if (!booking || booking.status === "cancelled") {
+                throw new Error("Booking not found or already cancelled");
             }
-            updatedSeats.push(seat);
+            const now = new Date();
+            const updatedSeats = [];
+            const cancelledSeatNumbers = [];
+            for (let seat of booking.selectedSeats) {
+                if (seatNumbers.includes(seat.seatNumber) && seat.status !== 'cancelled') {
+                    seat.status = 'cancelled';
+                    seat.cancelledAt = now;
+                    cancelledSeatNumbers.push(seat.seatNumber);
+                }
+                updatedSeats.push(seat);
+            }
+            if (cancelledSeatNumbers.length === 0) {
+                throw new Error("No valid seats to cancel");
+            }
+            const activeSeatsCount = updatedSeats.filter(seat => seat.status !== 'cancelled').length;
+            const trip = await this.passengerRepository.getTripById(booking.tripId, session);
+            if (!trip) {
+                throw new Error("Trip not found");
+            }
+            const updatedTotalPrice = activeSeatsCount * trip.price;
+            const newStatus = activeSeatsCount === 0 ? 'cancelled' : booking.status;
+            await this.passengerRepository.updateBookingFull(bookingId, {
+                selectedSeats: updatedSeats,
+                totalPrice: updatedTotalPrice,
+                status: newStatus
+            }, session);
+            const seatUpdateResult = await this.passengerRepository.addSeatsBackToTrip(
+                trip,
+                cancelledSeatNumbers,
+                session
+            );
+            if (!seatUpdateResult) {
+                for (let seat of booking.selectedSeats) {
+                    if (cancelledSeatNumbers.includes(seat.seatNumber)) {
+                        seat.status = 'booked';
+                        seat.cancelledAt = null;
+                    }
+                }
+                throw new Error("Failed to add cancelled seats back to trip");
+            }
+            const cancellationLog = await this.passengerRepository.createCancellationEntry(
+                bookingId, userId, reason, session
+            );
+            if (!cancellationLog) {
+                for (let seat of booking.selectedSeats) {
+                    if (cancelledSeatNumbers.includes(seat.seatNumber)) {
+                        seat.status = 'booked';
+                        seat.cancelledAt = null;
+                    }
+                }
+                throw new Error("Failed to create cancellation record");
+            }
+            await session.commitTransaction();
+            session.endSession();
+            return {
+                ...booking.toObject(),
+                selectedSeats: updatedSeats,
+                totalPrice: updatedTotalPrice,
+                status: newStatus
+            };
+        } catch (err) {
+            await session.abortTransaction();
+            session.endSession();
+            throw new Error("Partial cancellation failed. No changes were made.");
         }
-    
-        if (cancelledSeatNumbers.length === 0) {
-            throw new Error("No valid seats to cancel");
-        }
-    
-        await this.passengerRepository.updateBookingSeats(bookingId, updatedSeats);
-    
-        const activeSeatsCount = updatedSeats.filter(seat => seat.status !== 'cancelled').length;
-        const trip = await this.passengerRepository.getTripById(booking.tripId);
-    
-        const updatedTotalPrice = activeSeatsCount * trip.price;
-        const newStatus = activeSeatsCount === 0 ? 'cancelled' : booking.status;
-
-        await this.passengerRepository.updateBookingPartial(bookingId, {
-            totalPrice: updatedTotalPrice,
-            status: newStatus
-        });
-        await this.passengerRepository.addSeatsBackToTrip(booking.tripId, cancelledSeatNumbers);    
-        await this.passengerRepository.createCancellationEntry(bookingId, userId, reason);    
-        const updatedBooking = await this.passengerRepository.findBookingByIdAndUser(bookingId, userId);
-        return updatedBooking;
     }
 
     async getProfile(userId) {

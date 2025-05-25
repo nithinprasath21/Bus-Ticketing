@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import BusBookingPage from "./BusBookingPage";
-import CancelBookingPage from "./CancelBookingPage";
-import BusCard from "./BusCard";
+const BusBookingPage = lazy(() => import("./BusBookingPage"));
+const CancelBookingPage = lazy(() => import("./CancelBookingPage"));
+const BusCard = lazy(() => import("./BusCard"));
+const MyBookingsPage = lazy(() => import("./MyBookingsPage"));
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { useLazySearchBusesQuery } from "../api/passengerApi";
-import MyBookingsPage from "./MyBookingsPage";
 
 interface PassengerLandingProps {
   onLogout: () => void;
@@ -124,10 +124,11 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
             <div className="max-w-5xl mx-auto px-4 py-10">
               <div className="flex gap-4 mb-6">
                 <div className="w-1/2">
-                  <label className="block mb-1 text-sm text-gray-300">
+                  <label htmlFor="pickup" className="block mb-1 text-sm text-gray-300">
                     Pick-up <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="pickup"
                     type="text"
                     className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
                     value={source}
@@ -136,10 +137,11 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
                   />
                 </div>
                 <div className="w-1/2">
-                  <label className="block mb-1 text-sm text-gray-300">
+                  <label htmlFor="destination" className="block mb-1 text-sm text-gray-300">
                     Destination <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="destination"
                     type="text"
                     className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
                     value={destination}
@@ -151,8 +153,9 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
 
               <div className="mb-6 space-y-4">
                 <div>
-                  <label className="block mb-1 text-sm text-gray-300">Date and Time</label>
+                  <label htmlFor="datetime" className="block mb-1 text-sm text-gray-300"> Date and Time </label>
                   <input
+                    id="datetime"
                     type="datetime-local"
                     className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
                     value={date}
@@ -193,6 +196,7 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
                         Price Range: ₹{selectedPriceRange[0]} - ₹{selectedPriceRange[1]}
                       </label>
                       <Slider
+                        ariaLabelForHandle={["Minimum price", "Maximum price"]}
                         range
                         min={0}
                         max={maxPrice}
@@ -235,18 +239,46 @@ const PassengerLanding: React.FC<PassengerLandingProps> = ({ onLogout }) => {
 
               {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-              <div className="space-y-4">
-                {filteredBuses.map((bus) => (
-                  <BusCard key={bus._id} bus={bus} />
-                ))}
-              </div>
+              {data && (
+                <div className="space-y-4">
+                  {filteredBuses.map((bus) => (
+                    <Suspense
+                      key={bus._id}
+                      fallback={<div className="h-[180px] bg-gray-900 animate-pulse rounded-md" />}
+                    >
+                      <BusCard bus={bus} />
+                    </Suspense>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         }
       />
-      <Route path="/booking/:busId" element={<BusBookingPage />} />
-      <Route path="/bookings" element={<MyBookingsPage />} />
-      <Route path="/cancel-booking" element={<CancelBookingPage />} />
+      <Route
+        path="/booking/:busId"
+        element={
+          <Suspense fallback={<div className="text-center mt-4">Loading booking page...</div>}>
+            <BusBookingPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/bookings"
+        element={
+          <Suspense fallback={<div className="text-center mt-4">Loading bookings...</div>}>
+            <MyBookingsPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/cancel-booking"
+        element={
+          <Suspense fallback={<div className="text-center mt-4">Cancelling booking...</div>}>
+            <CancelBookingPage />
+          </Suspense>
+        }
+      />
     </Routes>
   );
 };

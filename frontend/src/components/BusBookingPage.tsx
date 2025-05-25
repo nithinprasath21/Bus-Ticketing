@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { Suspense, lazy } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   useBookSeatsMutation,
@@ -28,6 +30,16 @@ const BusBookingPage: React.FC = () => {
       prev.includes(seat) ? prev.filter((s) => s !== seat) : [...prev, seat]
     );
   };
+
+  const LazyToast = lazy(() =>
+    Promise.resolve({
+      default: ({ message }: { message: string }) => (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg border border-purple-500 z-50">
+          {message}
+        </div>
+      ),
+    })
+  );
 
   const handleBooking = async () => {
     if (!tripId) return;
@@ -133,9 +145,9 @@ const BusBookingPage: React.FC = () => {
       )}
 
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg border border-purple-500 z-50">
-          {toastMessage}
-        </div>
+        <Suspense fallback={null}>
+          <LazyToast message={toastMessage} />
+        </Suspense>
       )}
 
       <div className="w-full md:w-2/5 bg-gray-800 rounded-2xl p-6 shadow-lg space-y-5">
@@ -212,15 +224,16 @@ const BusBookingPage: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {details?.seats?.length > 0 ? (
               details.seats.map((seat: string) => {
+                const { ref, inView } = useInView({ triggerOnce: true, threshold: 0 });
                 const isAvailable = availableSeats.includes(seat);
                 const isSelected = selectedSeats.includes(seat);
 
-                return (
+                return inView ? (
                   <button
-                    key={seat}
+                    key={seat} ref={ref}
                     disabled={!isAvailable}
                     onClick={() => isAvailable && toggleSeat(seat)}
-                    className={`rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200
+                    className={`rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 w-full
                       ${
                         isAvailable
                           ? isSelected
@@ -231,6 +244,11 @@ const BusBookingPage: React.FC = () => {
                   >
                     {seat.toUpperCase()}
                   </button>
+                ) : (
+                  <div
+                    key={seat} ref={ref}
+                    className="rounded-xl px-4 py-3 text-sm font-medium w-full h-[44px] bg-gray-700 animate-pulse"
+                  />
                 );
               })
             ) : (

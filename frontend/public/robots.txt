@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /login/
+Disallow: /bookings/
+Disallow: /cancel-booking/
+
+Allow: /

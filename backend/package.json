@@ -34,9 +34,7 @@
     "express-slow-down": "^2.0.3",
     "jest": "^29.7.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb-memory-server": "^10.1.4",
     "mongoose": "^8.13.0",
-    "supertest": "^7.1.0",
     "winston": "^3.17.0"
   }
 }

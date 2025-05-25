@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import SignIn from "./components/SignIn";
-import SignUp from "./components/SignUp";
-import ForgotPassword from "./components/ForgotPassword";
-import PassengerLanding from "./components/PassengerLanding";
-import OperatorLanding from "./components/OperatorLanding";
-import AdminLanding from "./components/AdminLandling";
+const SignUp = lazy(() => import("./components/SignUp"));
+const ForgotPassword = lazy(() => import("./components/ForgotPassword"));
+const PassengerLanding = lazy(() => import("./components/PassengerLanding"));
+const OperatorLanding = lazy(() => import("./components/OperatorLanding"));
+const AdminLanding = lazy(() => import("./components/AdminLandling"));
 
 const App: React.FC = () => {
   const [view, setView] = useState<"signin" | "signup" | "forgot" | "passenger" | "operator" | "admin">("signin");
@@ -48,7 +48,9 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="min-h-screen bg-gray-950 text-white">
-        {renderView()}
+        <Suspense fallback={<div className="text-center mt-10">Loading...</div>}>
+          {renderView()}
+        </Suspense>
       </div>
     </Router>
   );
